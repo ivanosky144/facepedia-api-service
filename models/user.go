@@ -18,7 +18,7 @@ type User struct {
 	Followings     []string  `gorm:"column:followings"`
 	SocialPoint    int       `gorm:"column:social_point"`
 	Desc           string    `gorm:"column:desc"`
-	City           string    `gorm:"column:city"`
+	Country        string    `gorm:"column:city"`
 	CreatedAt      time.Time `gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt      time.Time `gorm:"column:updated_at;autoCreateTime;autoUpdateTime"`
 }

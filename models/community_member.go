@@ -8,9 +8,9 @@ import (
 
 type CommunityMember struct {
 	gorm.Model
-	UserID      int       `gorm:"primary_key;column:user_id"`
-	CommunityID int       `gorm:"primary_key;column:community_id"`
-	IsModerator bool      `gorm:"column:is_moderator"`
+	ID          int       `gorm:"primary_key;column:id"`
+	UserID      int       `gorm:"foreign_key;column:user_id"`
+	CommunityID int       `gorm:"foreign_key;column:community_id"`
 	CreatedAt   time.Time `gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;autoCreateTime;autoUpdateTime"`
 }

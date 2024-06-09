@@ -2,15 +2,15 @@ package routes
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/temuka-api-service/controller"
+	"github.com/temuka-api-service/handlers"
 )
 
 func UserRoutes() *mux.Router {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", controller.CreateUser).Methods("POST")
-	r.HandleFunc("/", controller.GetUserDetail).Methods("GET")
-	r.HandleFunc("/{id}", controller.SearchUsers).Methods("GET")
+	r.HandleFunc("/", handlers.CreateUser).Methods("POST")
+	r.HandleFunc("/", handlers.GetUserDetail).Methods("GET")
+	r.HandleFunc("/{id}", handlers.SearchUsers).Methods("GET")
 
 	return r
 }
