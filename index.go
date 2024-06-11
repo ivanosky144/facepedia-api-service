@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/temuka-api-service/config"
+	"github.com/temuka-api-service/internal"
 	"github.com/temuka-api-service/models"
 	"github.com/temuka-api-service/routes"
 	"gorm.io/gorm"
@@ -29,6 +30,12 @@ func main() {
 	}
 	log.Printf("Database : %v", db)
 	log.Println("Auto-migration completed.")
+
+	hub := internal.NewHub()
+	go hub.Run()
+
+	internal.Init(hub, db)
+
 	router := mux.NewRouter()
 
 	router.PathPrefix("/api/auth").Handler(http.StripPrefix("/api/auth", routes.AuthRoutes()))
