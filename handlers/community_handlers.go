@@ -71,22 +71,26 @@ func JoinCommunity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isMember := false
-	for _, memberID := range community.Members {
-		if memberID == requestBody.UserID {
-			isMember = true
-			break
-		}
-	}
-
-	if isMember {
+	var existingMember models.CommunityMember
+	if err := db.Where("community_id = ? AND user_id = ?", communityID, requestBody.UserID).First(&existingMember).Error; err == nil {
 		http.Error(w, "User already a member of the community", http.StatusBadRequest)
+		return
+	} else if err != gorm.ErrRecordNotFound {
+		http.Error(w, "Error checking community membership", http.StatusInternalServerError)
 		return
 	}
 
-	community.Members = append(community.Members, requestBody.UserID)
-	community.MembersCount += 1
+	newMember := models.CommunityMember{
+		User:      requestBody.UserID,
+		Community: communityID,
+	}
 
+	if err := db.Create(&newMember).Error; err != nil {
+		http.Error(w, "Error adding community member", http.StatusInternalServerError)
+		return
+	}
+
+	community.MembersCount += 1
 	if err := db.Save(&community).Error; err != nil {
 		http.Error(w, "Error updating community", http.StatusInternalServerError)
 		return
@@ -98,5 +102,4 @@ func JoinCommunity(w http.ResponseWriter, r *http.Request) {
 		Message: "Successfully joined the community",
 	}
 	json.NewEncoder(w).Encode(response)
-
 }

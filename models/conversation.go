@@ -1,18 +1,14 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
 type Conversation struct {
 	gorm.Model
-	ID        int       `gorm:"primary_key;column:id"`
-	Title     string    `gorm:"column:title"`
-	CreatorID int       `gorm:"foreign_key;column:creator_id"`
-	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime"`
-	UpdatedAt time.Time `gorm:"column:updated_at;autoCreateTime;autoUpdateTime"`
+	Title     string
+	CreatorID int
+	Creator   User
 }
 
 func (c *Conversation) TableName() string {
