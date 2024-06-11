@@ -144,15 +144,21 @@ func LikePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	alreadyLiked := false
-	for _, userID := range post.Likes {
-		if userID == requestBody.UserID {
+	for _, user := range post.Likes {
+		if uint(user.ID) == uint(requestBody.UserID) {
 			alreadyLiked = true
 			break
 		}
 	}
 
 	if !alreadyLiked {
-		post.Likes = append(post.Likes, requestBody.UserID)
+		var liker models.User
+		if err := db.First(&liker, requestBody.UserID).Error; err != nil {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
+
+		post.Likes = append(post.Likes, &liker)
 		if err := db.Save(&post).Error; err != nil {
 			http.Error(w, "Error liking post", http.StatusInternalServerError)
 			return

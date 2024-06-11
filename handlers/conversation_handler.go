@@ -20,8 +20,8 @@ func CreateConversation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newConversation := models.Conversation{
-		Title:     requestBody.Title,
-		CreatorID: requestBody.CreatorID,
+		Title:  requestBody.Title,
+		UserID: requestBody.CreatorID,
 	}
 
 	db.Create(&newConversation)

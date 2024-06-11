@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/temuka-api-service/config"
+	"github.com/temuka-api-service/models"
 	"github.com/temuka-api-service/routes"
 )
 
@@ -17,6 +18,10 @@ func EnableCors(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	config.OpenConnection()
+	if err := config.Database.AutoMigrate(&models.User{}, &models.Community{}, &models.Post{}, &models.Conversation{}, &models.Comment{}, &models.CommunityMember{}, &models.CommunityPost{}, &models.Moderator{}, &models.Participant{}); err != nil {
+		log.Fatalf("Failed to auto-migrate models: %v", err)
+	}
+	log.Println("Auto-migration completed.")
 	router := mux.NewRouter()
 
 	router.PathPrefix("/auth").Handler(routes.AuthRoutes())

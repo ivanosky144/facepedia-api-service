@@ -81,8 +81,8 @@ func JoinCommunity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newMember := models.CommunityMember{
-		User:      requestBody.UserID,
-		Community: communityID,
+		UserID:      requestBody.UserID,
+		CommunityID: communityID,
 	}
 
 	if err := db.Create(&newMember).Error; err != nil {

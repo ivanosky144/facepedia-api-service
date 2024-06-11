@@ -1,26 +1,31 @@
 package models
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
 type User struct {
 	gorm.Model
-	Username         string
-	Email            string
-	Password         string
-	ProfilePicture   string
-	CoverPicture     string
-	Followers        []string
-	Followings       []string
-	SocialPoint      int
-	Desc             string
-	Country          string
-	Posts            []Post
-	Comments         []Comment
-	CommunityMembers []CommunityMember
-	Conversations    []Conversation
-	Participants     []Participant
+	ID               int               `gorm:"primary_key;column:id"`
+	Username         string            `gorm:"column:username"`
+	Email            string            `gorm:"column:email"`
+	Password         string            `gorm:"column:password"`
+	ProfilePicture   string            `gorm:"column:profile_picture"`
+	CoverPicture     string            `gorm:"column:cover_picture"`
+	Followers        []*User           `gorm:"many2many:user_followers;"`
+	Followings       []*User           `gorm:"many2many:user_followings;"`
+	SocialPoint      int               `gorm:"column:social_point"`
+	Desc             string            `gorm:"column:description"`
+	Country          string            `gorm:"column:country"`
+	CreatedAt        time.Time         `gorm:"column:created_at;autoCreateTime"`
+	UpdatedAt        time.Time         `gorm:"column:updated_at;autoCreateTime;autoUpdateTime"`
+	Posts            []Post            `gorm:"foreignKey:UserID"`
+	Comments         []Comment         `gorm:"foreignKey:UserID"`
+	CommunityMembers []CommunityMember `gorm:"foreignKey:UserID"`
+	Conversations    []Conversation    `gorm:"foreignKey:UserID"`
+	Participants     []Participant     `gorm:"foreignKey:UserID"`
 }
 
 func (u *User) TableName() string {
