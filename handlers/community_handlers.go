@@ -6,11 +6,14 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/temuka-api-service/config"
 	"github.com/temuka-api-service/models"
 	"gorm.io/gorm"
 )
 
 func CreateCommunity(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
 	var requestBody struct {
 		Name        string `json:"name"`
 		Description string `json:"desc"`
@@ -38,10 +41,12 @@ func CreateCommunity(w http.ResponseWriter, r *http.Request) {
 		Message: "Community has been created",
 		Data:    newCommunity,
 	}
-	json.NewEncoder(w).Encode(response)
+	respondJSON(w, http.StatusOK, response)
 }
 
 func JoinCommunity(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
 	vars := mux.Vars(r)
 	communityIDstr := vars["id"]
 
@@ -101,5 +106,5 @@ func JoinCommunity(w http.ResponseWriter, r *http.Request) {
 	}{
 		Message: "Successfully joined the community",
 	}
-	json.NewEncoder(w).Encode(response)
+	respondJSON(w, http.StatusOK, response)
 }

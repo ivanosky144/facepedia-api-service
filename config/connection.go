@@ -1,6 +1,8 @@
 package config
 
 import (
+	"log"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -14,8 +16,10 @@ func OpenConnection() {
 	dsn := "host=localhost user=postgres password=admin dbname=temukaDB port=5432 sslmode=disable"
 	Database, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
+	log.Println("Database connection established successfully")
+
 }
 
 func GetDBInstance() *gorm.DB {

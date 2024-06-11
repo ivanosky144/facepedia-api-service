@@ -6,11 +6,14 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/temuka-api-service/config"
 	"github.com/temuka-api-service/models"
 	"gorm.io/gorm"
 )
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
 	var requestBody struct {
 		Title       string `json:"title"`
 		Description string `json:"desc"`
@@ -37,10 +40,12 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		Message: "Post has been created",
 		Data:    newPost,
 	}
-	json.NewEncoder(w).Encode(response)
+	respondJSON(w, http.StatusOK, response)
 }
 
 func GetTimelinePosts(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
 	vars := mux.Vars(r)
 	userIDstr := vars["user_id"]
 
@@ -82,10 +87,12 @@ func GetTimelinePosts(w http.ResponseWriter, r *http.Request) {
 		Data:    timelinePosts,
 	}
 
-	json.NewEncoder(w).Encode(response)
+	respondJSON(w, http.StatusOK, response)
 }
 
 func DeletePost(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
 	vars := mux.Vars(r)
 	postIDstr := vars["id"]
 
@@ -110,10 +117,12 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		Message: "Post has been deleted",
 	}
 
-	json.NewEncoder(w).Encode(response)
+	respondJSON(w, http.StatusOK, response)
 }
 
 func LikePost(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
 	vars := mux.Vars(r)
 	postIDstr := vars["id"]
 
@@ -170,6 +179,6 @@ func LikePost(w http.ResponseWriter, r *http.Request) {
 			Message: "You have liked this post",
 		}
 
-		json.NewEncoder(w).Encode(response)
+		respondJSON(w, http.StatusOK, response)
 	}
 }

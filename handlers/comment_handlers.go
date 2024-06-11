@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/temuka-api-service/config"
 	"github.com/temuka-api-service/models"
 )
 
 func AddComment(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
 	var requestBody struct {
 		PostID  int    `json:"post_id"`
 		UserID  int    `json:"user_id"`
@@ -36,5 +39,5 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 		Data:    newComment,
 	}
 
-	json.NewEncoder(w).Encode(&response)
+	respondJSON(w, http.StatusOK, response)
 }

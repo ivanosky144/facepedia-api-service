@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/temuka-api-service/config"
 	"github.com/temuka-api-service/models"
 )
 
 func CreateConversation(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
 	var requestBody struct {
 		Title     string `json:"title"`
 		CreatorID int    `json:"creator_id"`
@@ -33,5 +36,5 @@ func CreateConversation(w http.ResponseWriter, r *http.Request) {
 		Message: "Conversation has been created",
 		Data:    newConversation,
 	}
-	json.NewEncoder(w).Encode(response)
+	respondJSON(w, http.StatusOK, response)
 }
