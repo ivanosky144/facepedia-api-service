@@ -9,8 +9,8 @@ func UserRoutes() *mux.Router {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", handlers.CreateUser).Methods("POST")
-	r.HandleFunc("/", handlers.GetUserDetail).Methods("GET")
-	r.HandleFunc("/{id}", handlers.SearchUsers).Methods("GET")
+	r.HandleFunc("/{id}", handlers.GetUserDetail).Methods("GET")
+	r.HandleFunc("/search", handlers.SearchUsers).Methods("GET")
 
 	return r
 }

@@ -26,6 +26,12 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var user models.User
+	if err := db.First(&user, requestBody.UserID).Error; err != nil {
+		http.Error(w, "Invalid userid", http.StatusBadRequest)
+		return
+	}
+
 	newPost := models.Post{
 		Title:       requestBody.Title,
 		Description: requestBody.Description,
@@ -47,7 +53,7 @@ func GetTimelinePosts(w http.ResponseWriter, r *http.Request) {
 	db := config.GetDBInstance()
 
 	vars := mux.Vars(r)
-	userIDstr := vars["user_id"]
+	userIDstr := vars["userId"]
 
 	userID, err := strconv.Atoi(userIDstr)
 	if err != nil {
