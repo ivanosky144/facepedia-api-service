@@ -14,8 +14,8 @@ type User struct {
 	Password         string            `gorm:"column:password"`
 	ProfilePicture   string            `gorm:"column:profile_picture"`
 	CoverPicture     string            `gorm:"column:cover_picture"`
-	Followers        []*User           `gorm:"many2many:user_followers;"`
-	Followings       []*User           `gorm:"many2many:user_followings;"`
+	Followers        []*User           `gorm:"foreignKey:FollowerID"`
+	Followings       []*User           `gorm:"foreignKey:FollowingID"`
 	SocialPoint      int               `gorm:"column:social_point"`
 	Desc             string            `gorm:"column:description"`
 	Country          string            `gorm:"column:country"`

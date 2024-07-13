@@ -8,7 +8,7 @@ import (
 func CommentRoutes() *mux.Router {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", handlers.AddComment).Methods("POST")
+	r.HandleFunc("/add", handlers.AddComment).Methods("POST")
 
 	return r
 }

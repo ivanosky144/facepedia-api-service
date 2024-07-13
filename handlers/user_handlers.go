@@ -134,3 +134,37 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	respondJSON(w, http.StatusOK, response)
 }
+
+func FollowUser(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
+	var requestBody struct {
+		TargetID      int `json:target_id`
+		CurrentUserID int `json:currentuser_id`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	var targetUser models.User
+	if err := db.First(&targetUser, requestBody.TargetID).Error; err != nil {
+		http.Error(w, "Target user not found", http.StatusNotFound)
+		return
+	}
+
+	if err := db.Exec("INSERT INTO user_follows (user_id, follower_id) VALUES (?, ?)", requestBody.CurrentUserID, requestBody.TargetID).Error; err != nil {
+		http.Error(w, "Error following user", http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Message string `json:"message"`
+	}{
+		Message: "User has been followed",
+	}
+
+	respondJSON(w, http.StatusOK, response)
+}
