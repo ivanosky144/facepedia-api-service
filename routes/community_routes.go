@@ -9,7 +9,7 @@ func CommunityRoutes() *mux.Router {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", handlers.CreateCommunity).Methods("POST")
-	r.HandleFunc("/join/{id}", handlers.JoinCommunity).Methods("POST")
+	r.HandleFunc("/join/{community_id}", handlers.JoinCommunity).Methods("POST")
 
 	return r
 }

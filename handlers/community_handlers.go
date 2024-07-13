@@ -48,7 +48,7 @@ func JoinCommunity(w http.ResponseWriter, r *http.Request) {
 	db := config.GetDBInstance()
 
 	vars := mux.Vars(r)
-	communityIDstr := vars["id"]
+	communityIDstr := vars["community_id"]
 
 	communityID, err := strconv.Atoi(communityIDstr)
 	if err != nil {
