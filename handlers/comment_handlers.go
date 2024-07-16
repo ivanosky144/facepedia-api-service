@@ -127,15 +127,27 @@ func ShowReplies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var parent models.Comment
-	if err := db.First(&parent, "id = ?", requestBody.ParentID).Error; err != nil {
-		http.Error(w, "Invalid parent id", http.StatusBadRequest)
-		return
+	var fetchReplies func(int) ([]models.Comment, error)
+	fetchReplies = func(parentID int) ([]models.Comment, error) {
+		var comments []models.Comment
+		if err := db.Where("parent_id = ?", parentID).Error; err != nil {
+			return nil, err
+		}
+
+		for i := range comments {
+			replies, err := fetchReplies(comments[i].ID)
+			if err != nil {
+				return nil, err
+			}
+			comments[i].Replies = replies
+		}
+
+		return comments, nil
 	}
 
-	var replies []models.Comment
-	if err := db.Where("parent_id = ?", requestBody.ParentID).Find(&replies).Error; err != nil {
-		http.Error(w, "Replies not found", http.StatusNotFound)
+	replies, err := fetchReplies(requestBody.ParentID)
+	if err != nil {
+		http.Error(w, "Error retrieving replies", http.StatusBadRequest)
 		return
 	}
 
