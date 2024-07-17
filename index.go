@@ -37,6 +37,7 @@ func main() {
 	router.PathPrefix("/api/post").Handler(http.StripPrefix("/api/post", routes.PostRoutes()))
 	router.PathPrefix("/api/community").Handler(http.StripPrefix("/api/community", routes.CommunityRoutes()))
 	router.PathPrefix("/api/comment").Handler(http.StripPrefix("/api/comment", routes.CommentRoutes()))
+	router.PathPrefix("/api/moderator").Handler(http.StripPrefix("/api/moderator", routes.ModeratorRoutes()))
 
 	http.Handle("/", router)
 
