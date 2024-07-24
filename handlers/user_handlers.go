@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/temuka-api-service/config"
 	"github.com/temuka-api-service/models"
+	"gorm.io/gorm"
 )
 
 func SearchUsers(w http.ResponseWriter, r *http.Request) {
@@ -155,7 +156,7 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := db.Exec("INSERT INTO user_follows (user_id, follower_id) VALUES (?, ?)", requestBody.CurrentUserID, requestBody.TargetID).Error; err != nil {
+	if err := db.Exec("INSERT INTO user_follows (user_id, follow_id) VALUES (?, ?)", requestBody.CurrentUserID, requestBody.TargetID).Error; err != nil {
 		http.Error(w, "Error following user", http.StatusInternalServerError)
 		return
 	}
@@ -164,6 +165,45 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 		Message string `json:"message"`
 	}{
 		Message: "User has been followed",
+	}
+
+	respondJSON(w, http.StatusOK, response)
+}
+
+func GetFollowers(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
+	var requestBody struct {
+		UserID int `json:"user_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	var user models.User
+	if err := db.First(&user, "id = ?", requestBody.UserID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			http.Error(w, "User not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Invalid user id", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	var followerList []models.UserFollow
+	if err := db.Where("follow_id = ?", requestBody.UserID).Find(&followerList).Error; err != nil {
+		http.Error(w, "Error retrieving list of followers", http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Message string              `json:"message"`
+		Data    []models.UserFollow `json:"data"`
+	}{
+		Message: "Friend list has been retrieved",
+		Data:    followerList,
 	}
 
 	respondJSON(w, http.StatusOK, response)
