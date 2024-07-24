@@ -15,8 +15,15 @@ func SearchUsers(w http.ResponseWriter, r *http.Request) {
 	db := config.GetDBInstance()
 
 	var users []models.User
+	query := db.Model(&models.User{})
 
-	if err := db.Find(&users).Error; err != nil {
+	name := r.URL.Query().Get("name")
+
+	if name != "" {
+		query = query.Where("username LIKE ?", "%"+name+"%")
+	}
+
+	if err := query.Find(&users).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -30,7 +37,7 @@ func SearchUsers(w http.ResponseWriter, r *http.Request) {
 		Message string        `json:"message"`
 		Data    []models.User `json:"data"`
 	}{
-		Message: "User has been created",
+		Message: "Search results has been retrieved successfully",
 		Data:    users,
 	}
 	respondJSON(w, http.StatusOK, response)
@@ -140,8 +147,8 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 	db := config.GetDBInstance()
 
 	var requestBody struct {
-		TargetID      int `json:target_id`
-		CurrentUserID int `json:currentuser_id`
+		TargetID      int `json:"target_id"`
+		CurrentUserID int `json:"currentuser_id"`
 	}
 
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
@@ -151,12 +158,17 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var targetUser models.User
-	if err := db.First(&targetUser, requestBody.TargetID).Error; err != nil {
+	if err := db.First(&targetUser, "id = ?", requestBody.TargetID).Error; err != nil {
 		http.Error(w, "Target user not found", http.StatusNotFound)
 		return
 	}
 
-	if err := db.Exec("INSERT INTO user_follows (user_id, follow_id) VALUES (?, ?)", requestBody.CurrentUserID, requestBody.TargetID).Error; err != nil {
+	newUserFollow := models.UserFollow{
+		FollowerID:  requestBody.CurrentUserID,
+		FollowingID: requestBody.TargetID,
+	}
+
+	if err := db.Create(&newUserFollow).Error; err != nil {
 		http.Error(w, "Error following user", http.StatusInternalServerError)
 		return
 	}
@@ -193,7 +205,7 @@ func GetFollowers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var followerList []models.UserFollow
-	if err := db.Where("follow_id = ?", requestBody.UserID).Find(&followerList).Error; err != nil {
+	if err := db.Where("following_id = ?", requestBody.UserID).Find(&followerList).Error; err != nil {
 		http.Error(w, "Error retrieving list of followers", http.StatusInternalServerError)
 		return
 	}
