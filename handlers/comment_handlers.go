@@ -53,6 +53,11 @@ func ShowCommentsByPost(w http.ResponseWriter, r *http.Request) {
 		PostID int `json:"post_id"`
 	}
 
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
 	var post models.Post
 	if err := db.First(&post, "id = ?", requestBody.PostID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {

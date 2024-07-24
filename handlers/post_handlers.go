@@ -96,13 +96,84 @@ func GetTimelinePosts(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, response)
 }
 
+func GetPostDetail(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
+	vars := mux.Vars(r)
+	postID, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid post id", http.StatusBadRequest)
+		return
+	}
+
+	var post models.Post
+	if err := db.First(&post, "id = ?", postID).Error; err != nil {
+		http.Error(w, "Cannot retrieve the data because post not found", http.StatusNotFound)
+		return
+	}
+
+	response := struct {
+		Message string      `json:"message"`
+		Data    models.Post `json:"data"`
+	}{
+		Message: "Post detail has been retrieved successfully",
+		Data:    post,
+	}
+
+	respondJSON(w, http.StatusOK, response)
+}
+
+func UpdatePost(w http.ResponseWriter, r *http.Request) {
+	db := config.GetDBInstance()
+
+	vars := mux.Vars(r)
+	postID, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid post id", http.StatusBadRequest)
+		return
+	}
+
+	var requestBody struct {
+		Title       string `json:"title"`
+		Description string `json:"desc"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Invalid body request", http.StatusBadRequest)
+		return
+	}
+
+	var post models.Post
+	if err := db.First(&post, "id = ?", postID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			http.Error(w, "Post not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Invalid post id", http.StatusBadRequest)
+		}
+		return
+	}
+
+	post.Title = requestBody.Title
+	post.Description = requestBody.Description
+	if err := db.Save(&post).Error; err != nil {
+		http.Error(w, "Error updating the post", http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Message string `json:"message"`
+	}{
+		Message: "Post has been updated successfully",
+	}
+
+	respondJSON(w, http.StatusOK, response)
+}
+
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	db := config.GetDBInstance()
 
 	vars := mux.Vars(r)
-	postIDstr := vars["id"]
-
-	postID, err := strconv.Atoi(postIDstr)
+	postID, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, "Invalid post id", http.StatusBadRequest)
 		return

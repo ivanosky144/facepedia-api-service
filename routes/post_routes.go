@@ -12,6 +12,8 @@ func PostRoutes() *mux.Router {
 	r.HandleFunc("/timeline/{userId}", handlers.GetTimelinePosts).Methods("GET")
 	r.HandleFunc("/like/{id}", handlers.LikePost).Methods("PUT")
 	r.HandleFunc("/{id}", handlers.DeletePost).Methods("DELETE")
+	r.HandleFunc("/{id}", handlers.GetPostDetail).Methods("GET")
+	r.HandleFunc("/{id}", handlers.UpdatePost).Methods("PUT")
 
 	return r
 }
