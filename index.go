@@ -11,10 +11,18 @@ import (
 	"gorm.io/gorm"
 )
 
-func EnableCors(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+func EnableCors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == http.MethodOptions {
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func main() {
@@ -31,6 +39,7 @@ func main() {
 	log.Println("Auto-migration completed.")
 
 	router := mux.NewRouter()
+	router.Use(EnableCors)
 
 	router.PathPrefix("/api/auth").Handler(http.StripPrefix("/api/auth", routes.AuthRoutes()))
 	router.PathPrefix("/api/user").Handler(http.StripPrefix("/api/user", routes.UserRoutes()))
