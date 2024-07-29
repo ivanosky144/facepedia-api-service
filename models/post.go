@@ -16,6 +16,7 @@ type Post struct {
 	Likes          []*User         `gorm:"many2many:post_likes;"`
 	Comments       []Comment       `gorm:"foreignKey:PostID"`
 	CommunityPosts []CommunityPost `gorm:"foreignKey:PostID"`
+	Notification   []Notification  `gorm:"foreignKey:PostID"`
 	CreatedAt      time.Time       `gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt      time.Time       `gorm:"column:updated_at;autoCreateTime;autoUpdateTime"`
 }
