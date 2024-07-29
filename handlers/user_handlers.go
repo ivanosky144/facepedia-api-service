@@ -110,7 +110,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	db := config.GetDBInstance()
 
 	vars := mux.Vars(r)
-	userIDstr := vars["user_id"]
+	userIDstr := vars["id"]
 
 	userID, err := strconv.Atoi(userIDstr)
 	if err != nil {

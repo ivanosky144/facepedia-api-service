@@ -10,6 +10,7 @@ type User struct {
 	gorm.Model
 	ID               int               `gorm:"primary_key;column:id"`
 	Username         string            `gorm:"column:username"`
+	Displayname      string            `gorm:"column:displayname"`
 	Email            string            `gorm:"column:email"`
 	Password         string            `gorm:"column:password"`
 	ProfilePicture   string            `gorm:"column:profile_picture"`
