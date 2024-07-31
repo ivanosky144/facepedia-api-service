@@ -32,7 +32,7 @@ func main() {
 	if config.Database == nil {
 		log.Fatal("Database connection is nil")
 	}
-	if err := config.Database.AutoMigrate(&models.User{}, &models.Community{}, &models.Post{}, &models.Conversation{}, &models.Comment{}, &models.CommunityMember{}, &models.CommunityPost{}, &models.Moderator{}, &models.Participant{}, &models.UserFollow{}); err != nil {
+	if err := config.Database.AutoMigrate(&models.User{}, &models.Community{}, &models.Post{}, &models.Conversation{}, &models.Comment{}, &models.CommunityMember{}, &models.CommunityPost{}, &models.Moderator{}, &models.Participant{}, &models.UserFollow{}, &models.Notification{}); err != nil {
 		log.Fatalf("Failed to auto-migrate models: %v", err)
 	}
 	log.Printf("Database : %v", db)
@@ -48,6 +48,7 @@ func main() {
 	router.PathPrefix("/api/comment").Handler(http.StripPrefix("/api/comment", routes.CommentRoutes()))
 	router.PathPrefix("/api/moderator").Handler(http.StripPrefix("/api/moderator", routes.ModeratorRoutes()))
 	router.PathPrefix("/api/upload").Handler(http.StripPrefix("/api/upload", routes.FileRoutes()))
+	router.PathPrefix("/api/notification").Handler(http.StripPrefix("/api/notification", routes.FileRoutes()))
 
 	http.Handle("/", router)
 
