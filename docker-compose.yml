@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+    container_name: temuka-api-service
+    ports:
+    - "3200:3200"
+    environment:
+    - REDIS_PORT=6379
+    - POSTGRES_USER=postgres
+    - POSTGRES_PWD=admin
+    - POSTGRES_DB=temukaDB
+    - POSTGRES_PORT=5432
