@@ -27,6 +27,7 @@ func EnableCors(next http.Handler) http.Handler {
 
 func main() {
 	config.OpenConnection()
+	config.InitRedis()
 	var db *gorm.DB = config.GetDBInstance()
 
 	if config.Database == nil {
@@ -37,6 +38,17 @@ func main() {
 	}
 	log.Printf("Database : %v", db)
 	log.Println("Auto-migration completed.")
+
+	go config.RecentHub.Run()
+
+	go func() {
+		pubsub := config.RedisClient.Subscribe(config.Ctx, "notifications")
+		ch := pubsub.Channel()
+
+		for msg := range ch {
+			config.RecentHub.Broadcast <- []byte(msg.Payload)
+		}
+	}()
 
 	router := mux.NewRouter()
 	router.Use(EnableCors)
@@ -49,6 +61,8 @@ func main() {
 	router.PathPrefix("/api/moderator").Handler(http.StripPrefix("/api/moderator", routes.ModeratorRoutes()))
 	router.PathPrefix("/api/upload").Handler(http.StripPrefix("/api/upload", routes.FileRoutes()))
 	router.PathPrefix("/api/notification").Handler(http.StripPrefix("/api/notification", routes.FileRoutes()))
+
+	router.HandleFunc("/ws", config.HandleWebocket)
 
 	http.Handle("/", router)
 

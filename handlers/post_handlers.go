@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/temuka-api-service/config"
+	"github.com/temuka-api-service/helpers"
 	"github.com/temuka-api-service/models"
 	"gorm.io/gorm"
 )
@@ -249,6 +250,17 @@ func LikePost(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error liking post", http.StatusInternalServerError)
 			return
 		}
+
+		likePostNotification := models.Notification{
+			UserID:  post.UserID,
+			ActorID: requestBody.UserID,
+			PostID:  post.ID,
+			Type:    "like",
+			Message: liker.Username + " liked your post: " + post.Title,
+			Read:    false,
+		}
+		db.Create(&likePostNotification)
+		helpers.PushNotification(likePostNotification)
 
 		response := struct {
 			Message string `json:"message"`

@@ -13,36 +13,36 @@ var (
 )
 
 type Hub struct {
-	clients    map[*websocket.Conn]bool
-	broadcast  chan []byte
-	register   chan *websocket.Conn
-	unregister chan *websocket.Conn
+	Clients    map[*websocket.Conn]bool
+	Broadcast  chan []byte
+	Register   chan *websocket.Conn
+	Unregister chan *websocket.Conn
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		clients:    make(map[*websocket.Conn]bool),
-		broadcast:  make(chan []byte),
-		register:   make(chan *websocket.Conn),
-		unregister: make(chan *websocket.Conn),
+		Clients:    make(map[*websocket.Conn]bool),
+		Broadcast:  make(chan []byte),
+		Register:   make(chan *websocket.Conn),
+		Unregister: make(chan *websocket.Conn),
 	}
 }
 
 func (h *Hub) Run() {
 	for {
 		select {
-		case conn := <-h.register:
-			h.clients[conn] = true
-		case conn := <-h.unregister:
-			if _, ok := h.clients[conn]; ok {
-				delete(h.clients, conn)
+		case conn := <-h.Register:
+			h.Clients[conn] = true
+		case conn := <-h.Unregister:
+			if _, ok := h.Clients[conn]; ok {
+				delete(h.Clients, conn)
 				conn.Close()
 			}
-		case message := <-h.broadcast:
-			for conn := range h.clients {
+		case message := <-h.Broadcast:
+			for conn := range h.Clients {
 				err := conn.WriteMessage(websocket.TextMessage, message)
 				if err != nil {
-					h.unregister <- conn
+					h.Unregister <- conn
 					conn.Close()
 				}
 			}
@@ -57,10 +57,10 @@ func HandleWebocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RecentHub.register <- conn
+	RecentHub.Register <- conn
 
 	defer func() {
-		RecentHub.unregister <- conn
+		RecentHub.Unregister <- conn
 	}()
 
 	for {

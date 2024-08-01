@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/temuka-api-service/config"
+	"github.com/temuka-api-service/helpers"
 	"github.com/temuka-api-service/models"
 	"gorm.io/gorm"
 )
@@ -35,6 +36,26 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db.Create(&newComment)
+
+	var post models.Post
+	if err := db.First(&post, "id = ?", requestBody.PostID); err != nil {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+
+	if post.UserID != requestBody.UserID {
+		newCommentNotification := models.Notification{
+			UserID:    post.UserID,
+			ActorID:   requestBody.UserID,
+			CommentID: newComment.ID,
+			Type:      "comment",
+			Message:   "New comment on your post",
+			Read:      false,
+		}
+
+		db.Create(&newCommentNotification)
+		helpers.PushNotification(newCommentNotification)
+	}
 
 	response := struct {
 		Message string         `json:"message"`
