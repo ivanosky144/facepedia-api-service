@@ -4,10 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	router "github.com/temuka-api-service/api"
 	"github.com/temuka-api-service/config"
 	"github.com/temuka-api-service/models"
-	"github.com/temuka-api-service/routes"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +26,6 @@ func EnableCors(next http.Handler) http.Handler {
 
 func main() {
 	config.OpenConnection()
-	config.InitRedis()
 	var db *gorm.DB = config.GetDBInstance()
 
 	if config.Database == nil {
@@ -39,30 +37,8 @@ func main() {
 	log.Printf("Database : %v", db)
 	log.Println("Auto-migration completed.")
 
-	go config.RecentHub.Run()
-
-	go func() {
-		pubsub := config.RedisClient.Subscribe(config.Ctx, "notifications")
-		ch := pubsub.Channel()
-
-		for msg := range ch {
-			config.RecentHub.Broadcast <- []byte(msg.Payload)
-		}
-	}()
-
-	router := mux.NewRouter()
+	router := router.Routes()
 	router.Use(EnableCors)
-
-	router.PathPrefix("/api/auth").Handler(http.StripPrefix("/api/auth", routes.AuthRoutes()))
-	router.PathPrefix("/api/user").Handler(http.StripPrefix("/api/user", routes.UserRoutes()))
-	router.PathPrefix("/api/post").Handler(http.StripPrefix("/api/post", routes.PostRoutes()))
-	router.PathPrefix("/api/community").Handler(http.StripPrefix("/api/community", routes.CommunityRoutes()))
-	router.PathPrefix("/api/comment").Handler(http.StripPrefix("/api/comment", routes.CommentRoutes()))
-	router.PathPrefix("/api/moderator").Handler(http.StripPrefix("/api/moderator", routes.ModeratorRoutes()))
-	router.PathPrefix("/api/upload").Handler(http.StripPrefix("/api/upload", routes.FileRoutes()))
-	router.PathPrefix("/api/notification").Handler(http.StripPrefix("/api/notification", routes.FileRoutes()))
-
-	router.HandleFunc("/ws", config.HandleWebocket)
 
 	http.Handle("/", router)
 
