@@ -2,52 +2,66 @@ package router
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/temuka-api-service/handlers"
+	"github.com/temuka-api-service/internal/controller"
+	"github.com/temuka-api-service/internal/repository"
+	"gorm.io/gorm"
 )
 
-func Routes() *mux.Router {
+func Routes(db *gorm.DB) *mux.Router {
 	router := mux.NewRouter()
 
+	// Init repositories
+	userRepo := repository.NewUserRepository(db)
+	postRepo := repository.NewPostRepository(db)
+	notificationRepo := repository.NewNotificationRepository(db)
+	commentRepo := repository.NewCommentRepository(db)
+	communityRepo := repository.NewCommunityRepository(db)
+
+	// Init controllers
+	authController := controller.NewAuthController(userRepo)
+	userController := controller.NewUserController(userRepo)
+	postController := controller.NewPostController(postRepo, notificationRepo, userRepo)
+	communityController := controller.NewCommunityController(communityRepo)
+	commentController := controller.NewCommentController(commentRepo, postRepo, notificationRepo)
+	notificationController := controller.NewNotificationController(notificationRepo)
+	fileUploadController := controller.NewFileUploadController("uploads")
+
 	authRouter := router.PathPrefix("/api/auth").Subrouter()
-	authRouter.HandleFunc("/login", handlers.Login).Methods("POST")
-	authRouter.HandleFunc("/register", handlers.Register).Methods("POST")
-	authRouter.HandleFunc("/resetPassword/{id}", handlers.ResetPassword).Methods("POST")
+	authRouter.HandleFunc("/login", authController.Login).Methods("POST")
+	authRouter.HandleFunc("/register", authController.Register).Methods("POST")
+	authRouter.HandleFunc("/resetPassword/{id}", authController.ResetPassword).Methods("POST")
 
 	userRouter := router.PathPrefix("/api/user").Subrouter()
-	userRouter.HandleFunc("/", handlers.CreateUser).Methods("POST")
-	userRouter.HandleFunc("/{id}", handlers.UpdateUser).Methods("PUT")
-	userRouter.HandleFunc("/search", handlers.SearchUsers).Methods("GET")
-	userRouter.HandleFunc("/follow", handlers.FollowUser).Methods("POST")
-	userRouter.HandleFunc("/followers", handlers.GetFollowers).Methods("GET")
-	userRouter.HandleFunc("/{id}", handlers.GetUserDetail).Methods("GET")
+	userRouter.HandleFunc("/", userController.CreateUser).Methods("POST")
+	userRouter.HandleFunc("/{id}", userController.UpdateUser).Methods("PUT")
+	userRouter.HandleFunc("/search", userController.SearchUsers).Methods("GET")
+	userRouter.HandleFunc("/follow", userController.FollowUser).Methods("POST")
+	userRouter.HandleFunc("/followers", userController.GetFollowers).Methods("GET")
+	userRouter.HandleFunc("/{id}", userController.GetUserDetail).Methods("GET")
 
 	postRouter := router.PathPrefix("/api/post").Subrouter()
-	postRouter.HandleFunc("/create", handlers.CreatePost).Methods("POST")
-	postRouter.HandleFunc("/timeline/{userId}", handlers.GetTimelinePosts).Methods("GET")
-	postRouter.HandleFunc("/like/{id}", handlers.LikePost).Methods("PUT")
-	postRouter.HandleFunc("/{id}", handlers.DeletePost).Methods("DELETE")
-	postRouter.HandleFunc("/{id}", handlers.GetPostDetail).Methods("GET")
-	postRouter.HandleFunc("/{id}", handlers.UpdatePost).Methods("PUT")
+	postRouter.HandleFunc("/create", postController.CreatePost).Methods("POST")
+	postRouter.HandleFunc("/timeline/{userId}", postController.GetTimelinePosts).Methods("GET")
+	postRouter.HandleFunc("/like/{id}", postController.LikePost).Methods("PUT")
+	postRouter.HandleFunc("/{id}", postController.DeletePost).Methods("DELETE")
+	postRouter.HandleFunc("/{id}", postController.GetPostDetail).Methods("GET")
+	postRouter.HandleFunc("/{id}", postController.UpdatePost).Methods("PUT")
 
 	commentRouter := router.PathPrefix("/api/comment").Subrouter()
-	commentRouter.HandleFunc("/add", handlers.AddComment).Methods("POST")
-	commentRouter.HandleFunc("/replies", handlers.ShowReplies).Methods("GET")
-	commentRouter.HandleFunc("/{commentId}", handlers.DeleteComment).Methods("DELETE")
-	commentRouter.HandleFunc("/show", handlers.ShowCommentsByPost).Methods("GET")
+	commentRouter.HandleFunc("/add", commentController.AddComment).Methods("POST")
+	commentRouter.HandleFunc("/replies", commentController.ShowReplies).Methods("GET")
+	commentRouter.HandleFunc("/{commentId}", commentController.DeleteComment).Methods("DELETE")
+	commentRouter.HandleFunc("/show", commentController.ShowCommentsByPost).Methods("GET")
 
 	communityRouter := router.PathPrefix("/api/community").Subrouter()
-	communityRouter.HandleFunc("/", handlers.CreateCommunity).Methods("POST")
-	communityRouter.HandleFunc("/join/{community_id}", handlers.JoinCommunity).Methods("POST")
-
-	moderatorRouter := router.PathPrefix("/api/moderator").Subrouter()
-	moderatorRouter.HandleFunc("/invite", handlers.RequestInvitation).Methods("POST")
-	moderatorRouter.HandleFunc("/ban", handlers.BanCommunityMember).Methods("POST")
+	communityRouter.HandleFunc("/", communityController.CreateCommunity).Methods("POST")
+	communityRouter.HandleFunc("/join/{community_id}", communityController.JoinCommunity).Methods("POST")
 
 	fileRouter := router.PathPrefix("/api/file").Subrouter()
-	fileRouter.HandleFunc("/file", handlers.UploadFile).Methods("POST")
+	fileRouter.HandleFunc("/", fileUploadController.Upload).Methods("POST")
 
 	notificationRouter := router.PathPrefix("/api/notification").Subrouter()
-	notificationRouter.HandleFunc("/list", handlers.GetNotifications).Methods("POST")
+	notificationRouter.HandleFunc("/list", notificationController.GetNotificationsByUser).Methods("POST")
 
 	return router
 }
