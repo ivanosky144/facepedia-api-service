@@ -16,6 +16,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	notificationRepo := repository.NewNotificationRepository(db)
 	commentRepo := repository.NewCommentRepository(db)
 	communityRepo := repository.NewCommunityRepository(db)
+	moderatorRepo := repository.NewModeratorRepository(db)
 
 	// Init controllers
 	authController := controller.NewAuthController(userRepo)
@@ -24,6 +25,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	communityController := controller.NewCommunityController(communityRepo)
 	commentController := controller.NewCommentController(commentRepo, postRepo, notificationRepo)
 	notificationController := controller.NewNotificationController(notificationRepo)
+	moderatorController := controller.NewModeratorController(moderatorRepo, notificationRepo)
 	fileUploadController := controller.NewFileUploadController("uploads")
 
 	authRouter := router.PathPrefix("/api/auth").Subrouter()
@@ -62,6 +64,10 @@ func Routes(db *gorm.DB) *mux.Router {
 
 	notificationRouter := router.PathPrefix("/api/notification").Subrouter()
 	notificationRouter.HandleFunc("/list", notificationController.GetNotificationsByUser).Methods("POST")
+
+	moderatorRouter := router.PathPrefix("/api/moderator").Subrouter()
+	moderatorRouter.HandleFunc("/send", moderatorController.SendModeratorRequest).Methods("POST")
+	moderatorRouter.HandleFunc("/id", moderatorController.RemoveModerator).Methods("DELETE")
 
 	return router
 }
