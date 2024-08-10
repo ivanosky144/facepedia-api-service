@@ -68,7 +68,7 @@ func (r *UserRepositoryImpl) UpdateUser(ctx context.Context, userId int, user *m
 
 func (r *UserRepositoryImpl) GetFollowers(ctx context.Context, userID int) ([]model.UserFollow, error) {
 	var followers []model.UserFollow
-	if err := r.db.WithContext(ctx).Where("following_id = ?", userID).Find(&followers).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("follower_id = ?", userID).Find(&followers).Error; err != nil {
 		return nil, err
 	}
 	return followers, nil

@@ -6,7 +6,7 @@ import (
 
 	router "github.com/temuka-api-service/api"
 	"github.com/temuka-api-service/config"
-	"github.com/temuka-api-service/models"
+	"github.com/temuka-api-service/internal/model"
 	"gorm.io/gorm"
 )
 
@@ -31,8 +31,8 @@ func main() {
 	if config.Database == nil {
 		log.Fatal("Database connection is nil")
 	}
-	if err := config.Database.AutoMigrate(&models.User{}, &models.Community{}, &models.Post{}, &models.Conversation{}, &models.Comment{}, &models.CommunityMember{}, &models.CommunityPost{}, &models.Moderator{}, &models.Participant{}, &models.UserFollow{}, &models.Notification{}); err != nil {
-		log.Fatalf("Failed to auto-migrate models: %v", err)
+	if err := config.Database.AutoMigrate(&model.User{}, &model.Community{}, &model.Post{}, &model.Conversation{}, &model.Comment{}, &model.CommunityMember{}, &model.CommunityPost{}, &model.Moderator{}, &model.Participant{}, &model.UserFollow{}, &model.Notification{}); err != nil {
+		log.Fatalf("Failed to auto-migrate database: %v", err)
 	}
 	log.Printf("Database : %v", db)
 	log.Println("Auto-migration completed.")

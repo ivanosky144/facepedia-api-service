@@ -1,4 +1,4 @@
-package helpers
+package redis
 
 import (
 	"encoding/json"

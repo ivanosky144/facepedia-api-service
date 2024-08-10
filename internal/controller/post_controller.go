@@ -182,7 +182,49 @@ func (c *PostControllerImpl) DeletePost(w http.ResponseWriter, r *http.Request) 
 }
 
 func (c *PostControllerImpl) GetTimelinePosts(w http.ResponseWriter, r *http.Request) {
-	httputil.WriteResponse(w, http.StatusNotImplemented, map[string]string{"error": "Not implemented"})
+	var requestBody struct {
+		UserID int `json:"user_id"`
+	}
+
+	if err := httputil.ReadRequest(r, &requestBody); err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid request test"})
+		return
+	}
+
+	userPosts, err := c.PostRepository.GetPostsByUserID(context.Background(), requestBody.UserID)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Error retrieving user posts"})
+		return
+	}
+	userFollowers, err := c.UserRepository.GetFollowers(context.Background(), requestBody.UserID)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving followers"})
+		return
+	}
+
+	var followerPosts []model.Post
+
+	for _, data := range userFollowers {
+		if posts, err := c.PostRepository.GetPostsByUserID(context.Background(), data.FollowingID); err == nil {
+			followerPosts = append(followerPosts, posts...)
+		} else {
+			httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving friend posts"})
+			return
+		}
+	}
+
+	var timelinePosts []model.Post
+	timelinePosts = append(userPosts, followerPosts...)
+
+	response := struct {
+		Message string       `json:"message"`
+		Data    []model.Post `json:"data"`
+	}{
+		Message: "Timeline posts have been retrieved successfully",
+		Data:    timelinePosts,
+	}
+
+	httputil.WriteResponse(w, http.StatusOK, response)
 }
 
 func (c *PostControllerImpl) LikePost(w http.ResponseWriter, r *http.Request) {

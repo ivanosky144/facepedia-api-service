@@ -28,6 +28,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	moderatorController := controller.NewModeratorController(moderatorRepo, notificationRepo)
 	fileUploadController := controller.NewFileUploadController("uploads")
 
+	// Init routers
 	authRouter := router.PathPrefix("/api/auth").Subrouter()
 	authRouter.HandleFunc("/login", authController.Login).Methods("POST")
 	authRouter.HandleFunc("/register", authController.Register).Methods("POST")
@@ -43,7 +44,8 @@ func Routes(db *gorm.DB) *mux.Router {
 
 	postRouter := router.PathPrefix("/api/post").Subrouter()
 	postRouter.HandleFunc("/create", postController.CreatePost).Methods("POST")
-	postRouter.HandleFunc("/timeline/{userId}", postController.GetTimelinePosts).Methods("GET")
+	postRouter.HandleFunc("/timeline", postController.GetTimelinePosts).Methods("GET")
+	postRouter.HandleFunc("/self/{user_id}", postController.GetUserPosts).Methods("GET")
 	postRouter.HandleFunc("/like/{id}", postController.LikePost).Methods("PUT")
 	postRouter.HandleFunc("/{id}", postController.DeletePost).Methods("DELETE")
 	postRouter.HandleFunc("/{id}", postController.GetPostDetail).Methods("GET")

@@ -45,7 +45,7 @@ func (r *PostRepositoryImpl) UpdatePost(ctx context.Context, id int, post *model
 
 func (r *PostRepositoryImpl) GetPostsByUserID(ctx context.Context, userId int) ([]model.Post, error) {
 	var posts []model.Post
-	if err := r.db.WithContext(ctx).Where("user_id", userId).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("user_id", userId).Find(&posts).Error; err != nil {
 		return nil, err
 	}
 	return posts, nil
