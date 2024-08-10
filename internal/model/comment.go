@@ -11,7 +11,7 @@ type Comment struct {
 	ID            int            `gorm:"primary_key;column:id"`
 	UserID        int            `gorm:"column:user_id"`
 	PostID        int            `gorm:"column:post_id"`
-	ParentID      int            `gorm:"column:parent_id"`
+	ParentID      *int           `gorm:"column:parent_id"`
 	Content       string         `gorm:"column:content"`
 	Replies       []Comment      `gorm:"foreignKey:ParentID;references:ID"`
 	Parent        *Comment       `gorm:"foreignKey:ParentID;references:ID"`

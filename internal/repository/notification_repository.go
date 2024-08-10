@@ -26,7 +26,7 @@ func (r *NotificationRepositoryImpl) CreateNotification(ctx context.Context, not
 
 func (r *NotificationRepositoryImpl) GetNotificationsByUserID(ctx context.Context, userId int) ([]model.Notification, error) {
 	var notifications []model.Notification
-	if err := r.db.WithContext(ctx).Where("user_id", userId).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("user_id", userId).Find(&notifications).Error; err != nil {
 		return nil, err
 	}
 	return notifications, nil

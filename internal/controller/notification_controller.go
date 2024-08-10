@@ -37,7 +37,7 @@ func (c *NotificationControllerImpl) GetNotificationsByUser(w http.ResponseWrite
 
 	notifications, err := c.NotificationRepository.GetNotificationsByUserID(context.Background(), userID)
 	if err != nil {
-		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving posts"})
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving notifications"})
 		return
 	}
 

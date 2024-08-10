@@ -36,7 +36,7 @@ func (c *CommentControllerImpl) AddComment(w http.ResponseWriter, r *http.Reques
 	var requestBody struct {
 		PostID   int    `json:"post_id"`
 		UserID   int    `json:"user_id"`
-		ParentID int    `json:"parent_id"`
+		ParentID *int   `json:"parent_id"`
 		Content  string `json:"content"`
 	}
 
@@ -45,20 +45,26 @@ func (c *CommentControllerImpl) AddComment(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	var parentID *int
+	if requestBody.ParentID != nil {
+		parentID = requestBody.ParentID
+	}
+
 	newComment := model.Comment{
 		UserID:   requestBody.UserID,
 		PostID:   requestBody.PostID,
-		ParentID: requestBody.ParentID,
+		ParentID: parentID,
 		Content:  requestBody.Content,
+	}
+
+	post, err := c.PostRepository.GetPostDetailByID(context.Background(), newComment.PostID)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		return
 	}
 
 	if err := c.CommentRepository.CreateComment(context.Background(), &newComment); err != nil {
 		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error creating comment"})
-		return
-	}
-	post, err := c.PostRepository.GetPostDetailByID(context.Background(), newComment.PostID)
-	if err != nil {
-		httputil.WriteResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
 		return
 	}
 
@@ -66,6 +72,7 @@ func (c *CommentControllerImpl) AddComment(w http.ResponseWriter, r *http.Reques
 		newCommentNotification := model.Notification{
 			UserID:    post.UserID,
 			ActorID:   requestBody.UserID,
+			PostID:    requestBody.PostID,
 			CommentID: newComment.ID,
 			Type:      "comment",
 			Message:   "New comment on your post",
