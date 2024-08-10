@@ -12,6 +12,7 @@ type CommentRepository interface {
 	GetCommentsByPostID(ctx context.Context, postID int) ([]model.Comment, error)
 	DeleteComment(ctx context.Context, commentID int) error
 	GetRepliesByParentID(ctx context.Context, parentID int) ([]model.Comment, error)
+	GetCommentDetailByID(ctx context.Context, id int) (*model.Comment, error)
 }
 
 type CommentRepositoryImpl struct {
@@ -46,4 +47,12 @@ func (r *CommentRepositoryImpl) GetRepliesByParentID(ctx context.Context, parent
 		return nil, err
 	}
 	return comments, nil
+}
+
+func (r *CommentRepositoryImpl) GetCommentDetailByID(ctx context.Context, id int) (*model.Comment, error) {
+	var comment model.Comment
+	if err := r.db.WithContext(ctx).First(&comment, id).Error; err != nil {
+		return nil, err
+	}
+	return &comment, nil
 }
