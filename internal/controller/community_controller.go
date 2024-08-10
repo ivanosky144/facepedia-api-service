@@ -38,6 +38,11 @@ func (c *CommunityControllerImpl) CreateCommunity(w http.ResponseWriter, r *http
 		return
 	}
 
+	if !c.CommunityRepository.CheckCommunityNameAvailability(context.Background(), requestBody.Name) {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Community with the same name already exist"})
+		return
+	}
+
 	newCommunity := model.Community{
 		Name:        requestBody.Name,
 		Description: requestBody.Description,

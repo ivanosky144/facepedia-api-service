@@ -35,7 +35,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	authRouter.HandleFunc("/resetPassword/{id}", authController.ResetPassword).Methods("POST")
 
 	userRouter := router.PathPrefix("/api/user").Subrouter()
-	userRouter.HandleFunc("/", userController.CreateUser).Methods("POST")
+	userRouter.HandleFunc("", userController.CreateUser).Methods("POST")
 	userRouter.HandleFunc("/{id}", userController.UpdateUser).Methods("PUT")
 	userRouter.HandleFunc("/search", userController.SearchUsers).Methods("GET")
 	userRouter.HandleFunc("/follow", userController.FollowUser).Methods("POST")
@@ -43,7 +43,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	userRouter.HandleFunc("/{id}", userController.GetUserDetail).Methods("GET")
 
 	postRouter := router.PathPrefix("/api/post").Subrouter()
-	postRouter.HandleFunc("/create", postController.CreatePost).Methods("POST")
+	postRouter.HandleFunc("", postController.CreatePost).Methods("POST")
 	postRouter.HandleFunc("/timeline", postController.GetTimelinePosts).Methods("GET")
 	postRouter.HandleFunc("/self/{user_id}", postController.GetUserPosts).Methods("GET")
 	postRouter.HandleFunc("/like/{id}", postController.LikePost).Methods("PUT")
@@ -52,13 +52,13 @@ func Routes(db *gorm.DB) *mux.Router {
 	postRouter.HandleFunc("/{id}", postController.UpdatePost).Methods("PUT")
 
 	commentRouter := router.PathPrefix("/api/comment").Subrouter()
-	commentRouter.HandleFunc("/add", commentController.AddComment).Methods("POST")
+	commentRouter.HandleFunc("", commentController.AddComment).Methods("POST")
 	commentRouter.HandleFunc("/replies", commentController.ShowReplies).Methods("GET")
 	commentRouter.HandleFunc("/{commentId}", commentController.DeleteComment).Methods("DELETE")
 	commentRouter.HandleFunc("/show", commentController.ShowCommentsByPost).Methods("GET")
 
 	communityRouter := router.PathPrefix("/api/community").Subrouter()
-	communityRouter.HandleFunc("/", communityController.CreateCommunity).Methods("POST")
+	communityRouter.HandleFunc("", communityController.CreateCommunity).Methods("POST")
 	communityRouter.HandleFunc("/join/{community_id}", communityController.JoinCommunity).Methods("POST")
 
 	fileRouter := router.PathPrefix("/api/file").Subrouter()

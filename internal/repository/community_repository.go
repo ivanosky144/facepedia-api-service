@@ -9,6 +9,7 @@ import (
 
 type CommunityRepository interface {
 	CreateCommunity(context context.Context, community *model.Community) error
+	CheckCommunityNameAvailability(ctx context.Context, name string) bool
 	UpdateCommunity(context context.Context, id int, community *model.Community) error
 	GetCommunityDetailByID(context context.Context, id int) (*model.Community, error)
 	CheckMembership(ctx context.Context, communityID, userID int) (*model.CommunityMember, error)
@@ -27,6 +28,15 @@ func NewCommunityRepository(db *gorm.DB) CommunityRepository {
 
 func (r *CommunityRepositoryImpl) CreateCommunity(ctx context.Context, community *model.Community) error {
 	return r.db.WithContext(ctx).Create(community).Error
+}
+
+func (r *CommunityRepositoryImpl) CheckCommunityNameAvailability(ctx context.Context, name string) bool {
+	var count int64
+	err := r.db.WithContext(ctx).Where("name = ?", name).Count(&count).Error
+	if err != nil {
+		return false
+	}
+	return count == 0
 }
 
 func (r *CommunityRepositoryImpl) UpdateCommunity(ctx context.Context, id int, community *model.Community) error {
