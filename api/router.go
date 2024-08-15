@@ -60,6 +60,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	communityRouter := router.PathPrefix("/api/community").Subrouter()
 	communityRouter.HandleFunc("", communityController.CreateCommunity).Methods("POST")
 	communityRouter.HandleFunc("/join/{community_id}", communityController.JoinCommunity).Methods("POST")
+	communityRouter.HandleFunc("/post/{id}", communityController.GetCommunityPosts).Methods("GET")
 
 	fileRouter := router.PathPrefix("/api/file").Subrouter()
 	fileRouter.HandleFunc("/", fileUploadController.Upload).Methods("POST")

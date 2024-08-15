@@ -14,6 +14,7 @@ type CommunityRepository interface {
 	GetCommunityDetailByID(context context.Context, id int) (*model.Community, error)
 	CheckMembership(ctx context.Context, communityID, userID int) (*model.CommunityMember, error)
 	AddCommunityMember(ctx context.Context, member *model.CommunityMember) error
+	GetCommunityPosts(ctx context.Context, id int, filters map[string]interface{}) ([]model.CommunityPost, error)
 }
 
 type CommunityRepositoryImpl struct {
@@ -64,4 +65,34 @@ func (r *CommunityRepositoryImpl) CheckMembership(ctx context.Context, community
 		return nil, err
 	}
 	return &member, nil
+}
+
+func (r *CommunityRepositoryImpl) GetCommunityPosts(ctx context.Context, communityID int, filters map[string]interface{}) ([]model.CommunityPost, error) {
+	var communityPosts []model.CommunityPost
+
+	data := r.db.WithContext(ctx).Where("community_id = ?", communityID)
+
+	for key, val := range filters {
+		if key == "sort" || key == "sort_by" {
+			continue
+		}
+		data = data.Where(key+" = ?", val)
+	}
+
+	sortBy, sortByExists := filters["sort_by"].(string)
+	sortOrder, sortOrderExists := filters["sort"].(string)
+
+	if sortByExists && sortOrderExists {
+		data = data.Order(sortBy + " " + sortOrder)
+	} else if sortByExists {
+		data = data.Order(sortBy + "asc")
+	} else {
+		data = data.Order("created_at desc")
+	}
+
+	if err := data.Find(&communityPosts).Error; err != nil {
+		return nil, err
+	}
+
+	return communityPosts, nil
 }

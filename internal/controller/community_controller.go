@@ -14,6 +14,7 @@ import (
 type CommunityController interface {
 	CreateCommunity(w http.ResponseWriter, r *http.Request)
 	JoinCommunity(w http.ResponseWriter, r *http.Request)
+	GetCommunityPosts(w http.ResponseWriter, r *http.Request)
 }
 
 type CommunityControllerImpl struct {
@@ -124,5 +125,43 @@ func (c *CommunityControllerImpl) JoinCommunity(w http.ResponseWriter, r *http.R
 	}{
 		Message: "Successfully joined the community",
 	}
+	httputil.WriteResponse(w, http.StatusOK, response)
+}
+
+func (c *CommunityControllerImpl) GetCommunityPosts(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	communityIDstr := vars["id"]
+
+	communityID, err := strconv.Atoi(communityIDstr)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid community"})
+		return
+	}
+
+	filters := make(map[string]interface{})
+	if topic := r.URL.Query().Get("topic"); topic != "" {
+		filters["topic"] = topic
+	}
+	if sort := r.URL.Query().Get("sort"); sort != "" {
+		filters["sort"] = sort
+	}
+	if sortBy := r.URL.Query().Get("sort_by"); sortBy != "" {
+		filters["sort_by"] = sortBy
+	}
+
+	communityPosts, err := c.CommunityRepository.GetCommunityPosts(context.Background(), communityID, filters)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving posts"})
+		return
+	}
+
+	response := struct {
+		Message string                `json:"message"`
+		Data    []model.CommunityPost `json:"data"`
+	}{
+		Message: "Community posts has been retrieved",
+		Data:    communityPosts,
+	}
+
 	httputil.WriteResponse(w, http.StatusOK, response)
 }
