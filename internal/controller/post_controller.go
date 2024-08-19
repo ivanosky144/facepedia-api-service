@@ -26,13 +26,15 @@ type PostControllerImpl struct {
 	PostRepository         repository.PostRepository
 	NotificationRepository repository.NotificationRepository
 	UserRepository         repository.UserRepository
+	ReportRepository       repository.ReportRepository
 }
 
-func NewPostController(postRepository repository.PostRepository, notificationRepository repository.NotificationRepository, userRepository repository.UserRepository) PostController {
+func NewPostController(postRepo repository.PostRepository, notificationRepo repository.NotificationRepository, userRepo repository.UserRepository, reportRepo repository.ReportRepository) PostController {
 	return &PostControllerImpl{
-		PostRepository:         postRepository,
-		NotificationRepository: notificationRepository,
-		UserRepository:         userRepository,
+		PostRepository:         postRepo,
+		NotificationRepository: notificationRepo,
+		UserRepository:         userRepo,
+		ReportRepository:       reportRepo,
 	}
 }
 

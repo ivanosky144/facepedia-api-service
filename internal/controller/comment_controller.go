@@ -22,13 +22,15 @@ type CommentControllerImpl struct {
 	CommentRepository      repository.CommentRepository
 	PostRepository         repository.PostRepository
 	NotificationRepository repository.NotificationRepository
+	ReportRepository       repository.ReportRepository
 }
 
-func NewCommentController(commentRepo repository.CommentRepository, postRepo repository.PostRepository, notificationRepo repository.NotificationRepository) CommentController {
+func NewCommentController(commentRepo repository.CommentRepository, postRepo repository.PostRepository, notificationRepo repository.NotificationRepository, reportRepo repository.ReportRepository) CommentController {
 	return &CommentControllerImpl{
 		CommentRepository:      commentRepo,
 		PostRepository:         postRepo,
 		NotificationRepository: notificationRepo,
+		ReportRepository:       reportRepo,
 	}
 }
 
