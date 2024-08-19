@@ -61,6 +61,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	communityRouter.HandleFunc("", communityController.CreateCommunity).Methods("POST")
 	communityRouter.HandleFunc("/join/{community_id}", communityController.JoinCommunity).Methods("POST")
 	communityRouter.HandleFunc("/post/{id}", communityController.GetCommunityPosts).Methods("GET")
+	communityRouter.HandleFunc("/{id}", communityController.GetCommunityDetail).Methods("GET")
 
 	fileRouter := router.PathPrefix("/api/file").Subrouter()
 	fileRouter.HandleFunc("/", fileUploadController.Upload).Methods("POST")
@@ -70,7 +71,7 @@ func Routes(db *gorm.DB) *mux.Router {
 
 	moderatorRouter := router.PathPrefix("/api/moderator").Subrouter()
 	moderatorRouter.HandleFunc("/send", moderatorController.SendModeratorRequest).Methods("POST")
-	moderatorRouter.HandleFunc("/id", moderatorController.RemoveModerator).Methods("DELETE")
+	moderatorRouter.HandleFunc("/{id}", moderatorController.RemoveModerator).Methods("DELETE")
 
 	return router
 }

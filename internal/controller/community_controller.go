@@ -15,6 +15,7 @@ type CommunityController interface {
 	CreateCommunity(w http.ResponseWriter, r *http.Request)
 	JoinCommunity(w http.ResponseWriter, r *http.Request)
 	GetCommunityPosts(w http.ResponseWriter, r *http.Request)
+	GetCommunityDetail(w http.ResponseWriter, r *http.Request)
 }
 
 type CommunityControllerImpl struct {
@@ -161,6 +162,33 @@ func (c *CommunityControllerImpl) GetCommunityPosts(w http.ResponseWriter, r *ht
 	}{
 		Message: "Community posts has been retrieved",
 		Data:    communityPosts,
+	}
+
+	httputil.WriteResponse(w, http.StatusOK, response)
+}
+
+func (c *CommunityControllerImpl) GetCommunityDetail(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	communityIDstr := vars["id"]
+
+	communityID, err := strconv.Atoi(communityIDstr)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid community id"})
+		return
+	}
+
+	community, err := c.CommunityRepository.GetCommunityDetailByID(context.Background(), communityID)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving community detail"})
+		return
+	}
+
+	response := struct {
+		Message string          `json:"message"`
+		Data    model.Community `json:"data"`
+	}{
+		Message: "Community detail has been retrieved",
+		Data:    *community,
 	}
 
 	httputil.WriteResponse(w, http.StatusOK, response)
