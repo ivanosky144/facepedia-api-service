@@ -28,6 +28,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	commentController := controller.NewCommentController(commentRepo, postRepo, notificationRepo, reportRepo)
 	notificationController := controller.NewNotificationController(notificationRepo)
 	moderatorController := controller.NewModeratorController(moderatorRepo, notificationRepo)
+	reportController := controller.NewReportController(reportRepo)
 	fileUploadController := controller.NewFileUploadController("uploads")
 
 	// Init routers
@@ -80,6 +81,11 @@ func Routes(db *gorm.DB) *mux.Router {
 	moderatorRouter.Use(middleware.CheckAuth)
 	moderatorRouter.HandleFunc("/send", moderatorController.SendModeratorRequest).Methods("POST")
 	moderatorRouter.HandleFunc("/{id}", moderatorController.RemoveModerator).Methods("DELETE")
+
+	reportRouter := router.PathPrefix("/api/report").Subrouter()
+	reportRouter.Use(middleware.CheckAuth)
+	reportRouter.HandleFunc("", reportController.CreateReport).Methods("POST")
+	reportRouter.HandleFunc("/{id}", reportController.DeleteReport).Methods("DELETE")
 
 	return router
 }
