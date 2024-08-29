@@ -28,6 +28,7 @@ type User struct {
 	Conversations    []Conversation    `gorm:"foreignKey:UserID"`
 	Participants     []Participant     `gorm:"foreignKey:UserID"`
 	Notifications    []Notification    `gorm:"foreignKey:UserID"`
+	Reviews          []Review          `gorm:"foreignKey:UserID"`
 }
 
 func (u *User) TableName() string {
