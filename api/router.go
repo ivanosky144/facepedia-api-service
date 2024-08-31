@@ -19,6 +19,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	communityRepo := repository.NewCommunityRepository(db)
 	moderatorRepo := repository.NewModeratorRepository(db)
 	reportRepo := repository.NewReportRepository(db)
+	universityRepo := repository.NewUniversityRepository(db)
 
 	// Init controllers
 	authController := controller.NewAuthController(userRepo)
@@ -29,6 +30,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	notificationController := controller.NewNotificationController(notificationRepo)
 	moderatorController := controller.NewModeratorController(moderatorRepo, notificationRepo)
 	reportController := controller.NewReportController(reportRepo)
+	universityController := controller.NewUniversityController(universityRepo)
 	fileUploadController := controller.NewFileUploadController("uploads")
 
 	// Init routers
@@ -86,6 +88,13 @@ func Routes(db *gorm.DB) *mux.Router {
 	reportRouter.Use(middleware.CheckAuth)
 	reportRouter.HandleFunc("", reportController.CreateReport).Methods("POST")
 	reportRouter.HandleFunc("/{id}", reportController.DeleteReport).Methods("DELETE")
+
+	universityRouter := router.PathPrefix("/api/university").Subrouter()
+	universityRouter.Use(middleware.CheckAuth)
+	universityRouter.HandleFunc("", universityController.AddUniversity).Methods("POST")
+	universityRouter.HandleFunc("/{id}", universityController.UpdateUniversity).Methods("PUT")
+	universityRouter.HandleFunc("/{id}", universityController.GetUniversityDetail).Methods("GET")
+	universityRouter.HandleFunc("", universityController.GetUniversities).Methods("GET")
 
 	return router
 }
