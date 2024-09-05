@@ -96,6 +96,8 @@ func Routes(db *gorm.DB) *mux.Router {
 	universityRouter.HandleFunc("/{id}", universityController.UpdateUniversity).Methods("PUT")
 	universityRouter.HandleFunc("/{id}", universityController.GetUniversityDetail).Methods("GET")
 	universityRouter.HandleFunc("", universityController.GetUniversities).Methods("GET")
+	universityRouter.HandleFunc("/review", universityController.AddReview).Methods("POST")
+	universityRouter.HandleFunc("/review/university_id", universityController.GetUniversityReviews).Methods("GET")
 
 	return router
 }
