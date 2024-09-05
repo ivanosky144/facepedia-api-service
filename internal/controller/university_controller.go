@@ -34,9 +34,9 @@ func NewUniversityController(universityRepo repository.UniversityRepository, rev
 
 func (c *UniversityControllerImpl) AddUniversity(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
-		Name     string `json:"name"`
-		Summary  string `json:"summary"`
-		Location string `json:"location"`
+		Name       string `json:"name"`
+		Summary    string `json:"summary"`
+		LocationID int    `json:"location_id"`
 	}
 
 	if err := httputil.ReadRequest(r, &requestBody); err != nil {
@@ -45,9 +45,9 @@ func (c *UniversityControllerImpl) AddUniversity(w http.ResponseWriter, r *http.
 	}
 
 	newUniversity := model.University{
-		Name:     requestBody.Name,
-		Summary:  requestBody.Summary,
-		Location: requestBody.Location,
+		Name:       requestBody.Name,
+		Summary:    requestBody.Summary,
+		LocationID: requestBody.LocationID,
 	}
 
 	if err := c.UniversityRepository.CreateUniversity(context.Background(), &newUniversity); err != nil {

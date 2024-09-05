@@ -11,7 +11,7 @@ type University struct {
 	ID           int       `gorm:"primary_key;university_id"`
 	Name         string    `gorm:"column:name"`
 	Summary      string    `gorm:"column:summary"`
-	Location     string    `gorm:"column:location"`
+	LocationID   int       `gorm:"column:location_id"`
 	Website      string    `gorm:"column:website"`
 	Address      string    `gorm:"column:address"`
 	TotalReviews int       `gorm:"column:total_reviews"`
