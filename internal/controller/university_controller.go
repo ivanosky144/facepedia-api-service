@@ -16,15 +16,18 @@ type UniversityController interface {
 	UpdateUniversity(w http.ResponseWriter, r *http.Request)
 	GetUniversityDetail(w http.ResponseWriter, r *http.Request)
 	GetUniversities(w http.ResponseWriter, r *http.Request)
+	CreateUniversityReview(w http.ResponseWriter, r *http.Request)
 }
 
 type UniversityControllerImpl struct {
 	UniversityRepository repository.UniversityRepository
+	ReviewRepository     repository.ReviewRepository
 }
 
-func NewUniversityController(universityRepo repository.UniversityRepository) UniversityController {
+func NewUniversityController(universityRepo repository.UniversityRepository, reviewRepo repository.ReviewRepository) UniversityController {
 	return &UniversityControllerImpl{
 		UniversityRepository: universityRepo,
+		ReviewRepository:     reviewRepo,
 	}
 }
 
@@ -117,5 +120,9 @@ func (c *UniversityControllerImpl) GetUniversityDetail(w http.ResponseWriter, r 
 }
 
 func (c *UniversityControllerImpl) GetUniversities(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (c *UniversityControllerImpl) CreateUniversityReview(w http.ResponseWriter, r *http.Request) {
 
 }

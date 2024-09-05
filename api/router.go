@@ -20,6 +20,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	moderatorRepo := repository.NewModeratorRepository(db)
 	reportRepo := repository.NewReportRepository(db)
 	universityRepo := repository.NewUniversityRepository(db)
+	reviewRepo := repository.NewReviewRepository(db)
 
 	// Init controllers
 	authController := controller.NewAuthController(userRepo)
@@ -30,7 +31,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	notificationController := controller.NewNotificationController(notificationRepo)
 	moderatorController := controller.NewModeratorController(moderatorRepo, notificationRepo)
 	reportController := controller.NewReportController(reportRepo)
-	universityController := controller.NewUniversityController(universityRepo)
+	universityController := controller.NewUniversityController(universityRepo, reviewRepo)
 	fileUploadController := controller.NewFileUploadController("uploads")
 
 	// Init routers
