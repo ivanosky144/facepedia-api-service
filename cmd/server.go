@@ -31,7 +31,7 @@ func main() {
 	if config.Database == nil {
 		log.Fatal("Database connection is nil")
 	}
-	if err := config.Database.AutoMigrate(&model.User{}, &model.Community{}, &model.Post{}, &model.Conversation{}, &model.Comment{}, &model.CommunityMember{}, &model.CommunityPost{}, &model.Moderator{}, &model.Participant{}, &model.UserFollow{}, &model.Notification{}, &model.Report{}, &model.University{}, &model.Review{}); err != nil {
+	if err := config.Database.AutoMigrate(&model.User{}, &model.Community{}, &model.Post{}, &model.Conversation{}, &model.Comment{}, &model.CommunityMember{}, &model.CommunityPost{}, &model.Moderator{}, &model.Participant{}, &model.UserFollow{}, &model.Notification{}, &model.Report{}, &model.Review{}, &model.Location{}, &model.University{}); err != nil {
 		log.Fatalf("Failed to auto-migrate database: %v", err)
 	}
 	log.Printf("Database : %v", db)
