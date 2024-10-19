@@ -37,6 +37,8 @@ func (c *UniversityControllerImpl) AddUniversity(w http.ResponseWriter, r *http.
 		Name       string `json:"name"`
 		Summary    string `json:"summary"`
 		LocationID int    `json:"location_id"`
+		Website    string `json:"website"`
+		Address    string `json:"address"`
 	}
 
 	if err := httputil.ReadRequest(r, &requestBody); err != nil {
@@ -48,6 +50,8 @@ func (c *UniversityControllerImpl) AddUniversity(w http.ResponseWriter, r *http.
 		Name:       requestBody.Name,
 		Summary:    requestBody.Summary,
 		LocationID: requestBody.LocationID,
+		Website:    requestBody.Website,
+		Address:    requestBody.Address,
 	}
 
 	if err := c.UniversityRepository.CreateUniversity(context.Background(), &newUniversity); err != nil {
@@ -82,12 +86,24 @@ func (c *UniversityControllerImpl) UpdateUniversity(w http.ResponseWriter, r *ht
 		return
 	}
 
+	var updatedUniversity model.University
+
+	if err := httputil.ReadRequest(r, &updatedUniversity); err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+		return
+	}
+
+	if err := c.UniversityRepository.UpdateUniversity(context.Background(), university.ID, &updatedUniversity); err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error updating university"})
+		return
+	}
+
 	response := struct {
 		Message string           `json:"message"`
 		Data    model.University `json:"data"`
 	}{
-		Message: "Post has been updated",
-		Data:    *university,
+		Message: "University has been updated",
+		Data:    updatedUniversity,
 	}
 
 	httputil.WriteResponse(w, http.StatusOK, response)
@@ -145,6 +161,7 @@ func (c *UniversityControllerImpl) AddReview(w http.ResponseWriter, r *http.Requ
 		UserID       int    `json:"user_id"`
 		UniversityID int    `json:"university_id"`
 		Text         string `json:"text"`
+		Rating       int    `json:"rating`
 	}
 
 	if err := httputil.ReadRequest(r, &requestBody); err != nil {
@@ -160,6 +177,33 @@ func (c *UniversityControllerImpl) AddReview(w http.ResponseWriter, r *http.Requ
 
 	if err := c.ReviewRepository.CreateReview(context.Background(), &newUniversityReview); err != nil {
 		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error creating new review"})
+		return
+	}
+
+	university, err := c.UniversityRepository.GetUniversityDetailByID(context.Background(), requestBody.UniversityID)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusNotFound, map[string]string{"error": "University not found"})
+		return
+	}
+
+	universityRating := 0
+	if university.Rating != nil {
+		universityRating = *university.Rating
+	}
+
+	universityTotalReviews := 0
+	if university.TotalReviews != nil {
+		universityTotalReviews = *university.TotalReviews
+	}
+
+	universityTotalReviews = universityTotalReviews + 1
+	newUniversityRating := (universityRating*universityTotalReviews + requestBody.Rating) / (universityTotalReviews)
+
+	university.Rating = &newUniversityRating
+	university.TotalReviews = &universityTotalReviews
+
+	if err := c.UniversityRepository.UpdateUniversity(context.Background(), requestBody.UniversityID, university); err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to update university rating"})
 		return
 	}
 
