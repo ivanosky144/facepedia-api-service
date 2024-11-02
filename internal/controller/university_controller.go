@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/temuka-api-service/internal/model"
@@ -39,6 +40,8 @@ func (c *UniversityControllerImpl) AddUniversity(w http.ResponseWriter, r *http.
 		LocationID int    `json:"location_id"`
 		Website    string `json:"website"`
 		Address    string `json:"address"`
+		MinTuition int    `json:min_tuition`
+		MaxTuition int    `json:max_tuition`
 	}
 
 	if err := httputil.ReadRequest(r, &requestBody); err != nil {
@@ -48,10 +51,13 @@ func (c *UniversityControllerImpl) AddUniversity(w http.ResponseWriter, r *http.
 
 	newUniversity := model.University{
 		Name:       requestBody.Name,
+		Slug:       strings.ReplaceAll(strings.ToLower(requestBody.Name), " ", "_"),
 		Summary:    requestBody.Summary,
 		LocationID: requestBody.LocationID,
 		Website:    requestBody.Website,
 		Address:    requestBody.Address,
+		MinTuition: requestBody.MinTuition,
+		MaxTuition: requestBody.MaxTuition,
 	}
 
 	if err := c.UniversityRepository.CreateUniversity(context.Background(), &newUniversity); err != nil {
