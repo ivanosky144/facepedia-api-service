@@ -13,6 +13,7 @@ import (
 
 type CommunityController interface {
 	CreateCommunity(w http.ResponseWriter, r *http.Request)
+	GetCommunities(w http.ResponseWriter, r *http.Request)
 	JoinCommunity(w http.ResponseWriter, r *http.Request)
 	GetCommunityPosts(w http.ResponseWriter, r *http.Request)
 	GetCommunityDetail(w http.ResponseWriter, r *http.Request)
@@ -62,6 +63,24 @@ func (c *CommunityControllerImpl) CreateCommunity(w http.ResponseWriter, r *http
 	}{
 		Message: "Community has been created",
 		Data:    newCommunity,
+	}
+	httputil.WriteResponse(w, http.StatusOK, response)
+}
+
+func (c *CommunityControllerImpl) GetCommunities(w http.ResponseWriter, r *http.Request) {
+
+	communities, err := c.CommunityRepository.GetCommunities(context.Background())
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusNotFound, map[string]string{"error": "Error retrieving communities"})
+		return
+	}
+
+	response := struct {
+		Message string            `json:"message"`
+		Data    []model.Community `json:"data"`
+	}{
+		Message: "Communities have been retireved",
+		Data:    communities,
 	}
 	httputil.WriteResponse(w, http.StatusOK, response)
 }

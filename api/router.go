@@ -26,7 +26,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	// Init controllers
 	authController := controller.NewAuthController(userRepo)
 	userController := controller.NewUserController(userRepo)
-	postController := controller.NewPostController(postRepo, notificationRepo, userRepo, reportRepo)
+	postController := controller.NewPostController(postRepo, notificationRepo, userRepo, reportRepo, communityRepo)
 	communityController := controller.NewCommunityController(communityRepo)
 	commentController := controller.NewCommentController(commentRepo, postRepo, notificationRepo, reportRepo)
 	notificationController := controller.NewNotificationController(notificationRepo)
@@ -71,6 +71,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	communityRouter := router.PathPrefix("/api/community").Subrouter()
 	communityRouter.Use(middleware.CheckAuth)
 	communityRouter.HandleFunc("", communityController.CreateCommunity).Methods("POST")
+	communityRouter.HandleFunc("", communityController.GetCommunities).Methods("GET")
 	communityRouter.HandleFunc("/join/{community_id}", communityController.JoinCommunity).Methods("POST")
 	communityRouter.HandleFunc("/post/{id}", communityController.GetCommunityPosts).Methods("GET")
 	communityRouter.HandleFunc("/{id}", communityController.GetCommunityDetail).Methods("GET")

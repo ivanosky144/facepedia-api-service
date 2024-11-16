@@ -11,10 +11,13 @@ type CommunityRepository interface {
 	CreateCommunity(context context.Context, community *model.Community) error
 	CheckCommunityNameAvailability(ctx context.Context, name string) bool
 	UpdateCommunity(context context.Context, id int, community *model.Community) error
+	GetCommunities(context context.Context) ([]model.Community, error)
 	GetCommunityDetailByID(context context.Context, id int) (*model.Community, error)
 	CheckMembership(ctx context.Context, communityID, userID int) (*model.CommunityMember, error)
 	AddCommunityMember(ctx context.Context, member *model.CommunityMember) error
 	GetCommunityPosts(ctx context.Context, id int, filters map[string]interface{}) ([]model.CommunityPost, error)
+	UpdateCommunityPostsCount(context context.Context, id int) error
+	UpdateCommunityMembersCount(context context.Context, id int) error
 }
 
 type CommunityRepositoryImpl struct {
@@ -52,8 +55,26 @@ func (r *CommunityRepositoryImpl) GetCommunityDetailByID(ctx context.Context, id
 	return &community, nil
 }
 
+func (r *CommunityRepositoryImpl) GetCommunities(context context.Context) ([]model.Community, error) {
+	var communities []model.Community
+	if err := r.db.WithContext(context).Find(&communities).Error; err != nil {
+		return nil, err
+	}
+	return communities, nil
+}
+
 func (r *CommunityRepositoryImpl) AddCommunityMember(ctx context.Context, member *model.CommunityMember) error {
 	return r.db.WithContext(ctx).Create(member).Error
+}
+
+func (r *CommunityRepositoryImpl) UpdateCommunityPostsCount(context context.Context, id int) error {
+	return r.db.WithContext(context).Model(&model.Community{}).Where("id = ?", id).
+		Update("posts_count", gorm.Expr("posts_count + 1")).Error
+}
+
+func (r *CommunityRepositoryImpl) UpdateCommunityMembersCount(context context.Context, id int) error {
+	return r.db.WithContext(context).Model(&model.Community{}).Where("id = ?", id).
+		Update("members_count", gorm.Expr("members_count + 1")).Error
 }
 
 func (r *CommunityRepositoryImpl) CheckMembership(ctx context.Context, communityID, userID int) (*model.CommunityMember, error) {

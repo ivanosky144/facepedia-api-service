@@ -27,14 +27,16 @@ type PostControllerImpl struct {
 	NotificationRepository repository.NotificationRepository
 	UserRepository         repository.UserRepository
 	ReportRepository       repository.ReportRepository
+	CommunityRepository    repository.CommunityRepository
 }
 
-func NewPostController(postRepo repository.PostRepository, notificationRepo repository.NotificationRepository, userRepo repository.UserRepository, reportRepo repository.ReportRepository) PostController {
+func NewPostController(postRepo repository.PostRepository, notificationRepo repository.NotificationRepository, userRepo repository.UserRepository, reportRepo repository.ReportRepository, communityRepo repository.CommunityRepository) PostController {
 	return &PostControllerImpl{
 		PostRepository:         postRepo,
 		NotificationRepository: notificationRepo,
 		UserRepository:         userRepo,
 		ReportRepository:       reportRepo,
+		CommunityRepository:    communityRepo,
 	}
 }
 
@@ -43,6 +45,7 @@ func (c *PostControllerImpl) CreatePost(w http.ResponseWriter, r *http.Request) 
 		Title       string `json:"title"`
 		Description string `json:"desc"`
 		UserID      int    `json:"user_id"`
+		CommunityID int    `json:"community_id"`
 	}
 
 	if err := httputil.ReadRequest(r, &requestBody); err != nil {
@@ -58,6 +61,11 @@ func (c *PostControllerImpl) CreatePost(w http.ResponseWriter, r *http.Request) 
 
 	if err := c.PostRepository.CreatePost(context.Background(), &newPost); err != nil {
 		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error creating post"})
+		return
+	}
+
+	if err := c.CommunityRepository.UpdateCommunityPostsCount(context.Background(), requestBody.CommunityID); err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error updating community posts count"})
 		return
 	}
 
