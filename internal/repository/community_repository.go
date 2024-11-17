@@ -36,7 +36,7 @@ func (r *CommunityRepositoryImpl) CreateCommunity(ctx context.Context, community
 
 func (r *CommunityRepositoryImpl) CheckCommunityNameAvailability(ctx context.Context, name string) bool {
 	var count int64
-	err := r.db.WithContext(ctx).Where("name = ?", name).Count(&count).Error
+	err := r.db.WithContext(ctx).Model(&model.Community{}).Where("name = ?", name).Count(&count).Error
 	if err != nil {
 		return false
 	}
