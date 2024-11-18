@@ -2,13 +2,18 @@ package controller
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/temuka-api-service/internal/model"
 	"github.com/temuka-api-service/internal/repository"
 	httputil "github.com/temuka-api-service/pkg/http"
+	"github.com/temuka-api-service/pkg/redis"
 	"gorm.io/gorm"
 )
 
@@ -201,6 +206,21 @@ func (c *PostControllerImpl) GetTimelinePosts(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	cacheKey := fmt.Sprintf("timeline_posts_user_%d", requestBody.UserID)
+
+	var cachedResponse struct {
+		Message string       `json:"message"`
+		Data    []model.Post `json:"data"`
+	}
+
+	if err := redis.GetCache(cacheKey, &cachedResponse); err == nil {
+		log.Printf("Cache hit for user %d", requestBody.UserID)
+		httputil.WriteResponse(w, http.StatusOK, cachedResponse)
+		return
+	} else if err != nil {
+		log.Printf("Cache miss for user %d", requestBody.UserID)
+	}
+
 	userPosts, err := c.PostRepository.GetPostsByUserID(context.Background(), requestBody.UserID)
 	if err != nil {
 		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Error retrieving user posts"})
@@ -232,6 +252,10 @@ func (c *PostControllerImpl) GetTimelinePosts(w http.ResponseWriter, r *http.Req
 	}{
 		Message: "Timeline posts have been retrieved successfully",
 		Data:    timelinePosts,
+	}
+
+	if err := redis.SetCache(cacheKey, response, 10*time.Minute); err != nil {
+		log.Print("Error caching timeline posts:")
 	}
 
 	httputil.WriteResponse(w, http.StatusOK, response)

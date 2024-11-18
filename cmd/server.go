@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-redis/redis/v8"
 	router "github.com/temuka-api-service/api"
 	"github.com/temuka-api-service/config"
 	"github.com/temuka-api-service/internal/model"
@@ -13,8 +12,7 @@ import (
 )
 
 var (
-	RedisClient *redis.Client
-	Ctx         = context.Background()
+	Ctx = context.Background()
 )
 
 func EnableCors(next http.Handler) http.Handler {
@@ -62,15 +60,7 @@ func main() {
 	log.Printf("Database : %v", db)
 	log.Println("Auto-migration completed.")
 
-	RedisClient = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
-	})
-
-	_, err := RedisClient.Ping(Ctx).Result()
-	if err != nil {
-		log.Fatalf("Failed to connect to redis")
-	}
-	log.Println("Connected to redis")
+	config.InitRedis()
 
 	router := router.Routes(db)
 	router.Use(EnableCors)
