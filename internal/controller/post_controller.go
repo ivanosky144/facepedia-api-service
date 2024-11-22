@@ -197,16 +197,16 @@ func (c *PostControllerImpl) DeletePost(w http.ResponseWriter, r *http.Request) 
 }
 
 func (c *PostControllerImpl) GetTimelinePosts(w http.ResponseWriter, r *http.Request) {
-	var requestBody struct {
-		UserID int `json:"user_id"`
-	}
+	vars := mux.Vars(r)
+	userIDstr := vars["user_id"]
 
-	if err := httputil.ReadRequest(r, &requestBody); err != nil {
-		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid request test"})
+	userID, err := strconv.Atoi(userIDstr)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid user id"})
 		return
 	}
 
-	cacheKey := fmt.Sprintf("timeline_posts_user_%d", requestBody.UserID)
+	cacheKey := fmt.Sprintf("timeline_posts_user_%d", userID)
 
 	var cachedResponse struct {
 		Message string       `json:"message"`
@@ -214,19 +214,19 @@ func (c *PostControllerImpl) GetTimelinePosts(w http.ResponseWriter, r *http.Req
 	}
 
 	if err := redis.GetCache(cacheKey, &cachedResponse); err == nil {
-		log.Printf("Cache hit for user %d", requestBody.UserID)
+		log.Printf("Cache hit for user %d", userID)
 		httputil.WriteResponse(w, http.StatusOK, cachedResponse)
 		return
 	} else if err != nil {
-		log.Printf("Cache miss for user %d", requestBody.UserID)
+		log.Printf("Cache miss for user %d", userID)
 	}
 
-	userPosts, err := c.PostRepository.GetPostsByUserID(context.Background(), requestBody.UserID)
+	userPosts, err := c.PostRepository.GetPostsByUserID(context.Background(), userID)
 	if err != nil {
 		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Error retrieving user posts"})
 		return
 	}
-	userFollowers, err := c.UserRepository.GetFollowers(context.Background(), requestBody.UserID)
+	userFollowers, err := c.UserRepository.GetFollowers(context.Background(), userID)
 	if err != nil {
 		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving followers"})
 		return

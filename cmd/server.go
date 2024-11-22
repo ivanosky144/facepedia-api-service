@@ -16,15 +16,18 @@ var (
 )
 
 func EnableCors(next http.Handler) http.Handler {
+	log.Printf("Cors middleware triggered")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		// Setting CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
+		// Handle preflight request for CORS
 		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-
+		// Call the next handler
 		next.ServeHTTP(w, r)
 	})
 }
@@ -63,9 +66,9 @@ func main() {
 	config.InitRedis()
 
 	router := router.Routes(db)
-	router.Use(EnableCors)
+	protectedRoutes := EnableCors(router)
 
-	http.Handle("/", router)
+	http.Handle("/", protectedRoutes)
 
 	log.Println("Server is listening on port 3200")
 	log.Fatal(http.ListenAndServe("localhost:3200", nil))
