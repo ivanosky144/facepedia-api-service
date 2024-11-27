@@ -21,7 +21,7 @@ type ConversationControllerImpl struct {
 	UserRepository         repository.UserRepository
 }
 
-func NewConversationRepository(conversationRepo repository.ConversationRepository, userRepo repository.UserRepository) ConversationController {
+func NewConversationController(conversationRepo repository.ConversationRepository, userRepo repository.UserRepository) ConversationController {
 	return &ConversationControllerImpl{
 		ConversationRepository: conversationRepo,
 		UserRepository:         userRepo,
@@ -45,7 +45,7 @@ func (c *ConversationControllerImpl) AddConversation(w http.ResponseWriter, r *h
 	}
 
 	if err := c.ConversationRepository.CreateConversation(context.Background(), &newConversation); err != nil {
-		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error creating comment"})
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error creating conversation"})
 		return
 	}
 
@@ -53,7 +53,7 @@ func (c *ConversationControllerImpl) AddConversation(w http.ResponseWriter, r *h
 		Message string             `json:"message"`
 		Data    model.Conversation `json:"data"`
 	}{
-		Message: "Comment has been added",
+		Message: "conversation has been added",
 		Data:    newConversation,
 	}
 
@@ -64,21 +64,21 @@ func (c *ConversationControllerImpl) DeleteConversation(w http.ResponseWriter, r
 	vars := mux.Vars(r)
 	conversationIDstr := vars["id"]
 
-	commentID, err := strconv.Atoi(conversationIDstr)
+	conversationID, err := strconv.Atoi(conversationIDstr)
 	if err != nil {
-		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid comment id"})
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid conversation id"})
 		return
 	}
 
-	if err := c.ConversationRepository.DeleteConversation(context.Background(), commentID); err != nil {
-		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error deleting comment"})
+	if err := c.ConversationRepository.DeleteConversation(context.Background(), conversationID); err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error deleting conversation"})
 		return
 	}
 
 	response := struct {
 		Message string `json:"message"`
 	}{
-		Message: "Comment has been deleted",
+		Message: "Conversation has been deleted",
 	}
 
 	httputil.WriteResponse(w, http.StatusOK, response)
