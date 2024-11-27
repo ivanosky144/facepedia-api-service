@@ -3,8 +3,12 @@ package config
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/websocket"
+	"github.com/temuka-api-service/internal/model"
+	"github.com/temuka-api-service/internal/repository"
+	httputil "github.com/temuka-api-service/pkg/http"
 )
 
 var (
@@ -13,17 +17,28 @@ var (
 )
 
 type Hub struct {
-	Clients    map[*websocket.Conn]bool
-	Broadcast  chan []byte
-	Register   chan *websocket.Conn
+	Clients    map[*websocket.Conn]int
+	Broadcast  chan MessagePayload
+	Register   chan ClientInfo
 	Unregister chan *websocket.Conn
+}
+
+type MessagePayload struct {
+	ConversationID int    `json:"conversation_id"`
+	UserID         int    `json:"user_id"`
+	Text           string `json:"text"`
+}
+
+type ClientInfo struct {
+	Connection     *websocket.Conn
+	ConversationID int
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		Clients:    make(map[*websocket.Conn]bool),
-		Broadcast:  make(chan []byte),
-		Register:   make(chan *websocket.Conn),
+		Clients:    make(map[*websocket.Conn]int),
+		Broadcast:  make(chan MessagePayload),
+		Register:   make(chan ClientInfo),
 		Unregister: make(chan *websocket.Conn),
 	}
 }
@@ -31,43 +46,67 @@ func NewHub() *Hub {
 func (h *Hub) Run() {
 	for {
 		select {
-		case conn := <-h.Register:
-			h.Clients[conn] = true
+		case client := <-h.Register:
+			h.Clients[client.Connection] = client.ConversationID
 		case conn := <-h.Unregister:
 			if _, ok := h.Clients[conn]; ok {
 				delete(h.Clients, conn)
 				conn.Close()
 			}
 		case message := <-h.Broadcast:
-			for conn := range h.Clients {
-				err := conn.WriteMessage(websocket.TextMessage, message)
-				if err != nil {
-					h.Unregister <- conn
-					conn.Close()
+			for conn, convID := range h.Clients {
+				if convID == message.ConversationID {
+					err := conn.WriteJSON(message)
+					if err != nil {
+						h.Unregister <- conn
+						conn.Close()
+					}
 				}
 			}
 		}
 	}
 }
 
-func HandleWebocket(w http.ResponseWriter, r *http.Request) {
-	conn, err := Upgrader.Upgrade(w, r, nil)
+func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
+	consersationIDstr := r.URL.Query().Get("conversation_id")
+	conversationID, err := strconv.Atoi(consersationIDstr)
 	if err != nil {
-		http.Error(w, "Failed to ugprade connection", http.StatusInternalServerError)
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid conversation id"})
 		return
 	}
 
-	RecentHub.Register <- conn
+	conn, err := Upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to upgrade connection"})
+		return
+	}
+
+	RecentHub.Register <- ClientInfo{Connection: conn, ConversationID: conversationID}
 
 	defer func() {
 		RecentHub.Unregister <- conn
 	}()
 
+	repo := repository.NewMessageRepositoryImpl(GetDBInstance())
+
 	for {
-		_, message, err := conn.ReadMessage()
+		var message MessagePayload
+		err := conn.ReadJSON(&message)
 		if err != nil {
 			break
 		}
-		log.Println("Received message: ", string(message))
+
+		newMessage := model.Message{
+			ParticipantID: message.UserID,
+			Text:          message.Text,
+		}
+
+		err = repo.CreateMessage(Ctx, &newMessage)
+		if err != nil {
+			log.Println("Failed to save message", err)
+		}
+
+		RecentHub.Broadcast <- message
 	}
+
 }
