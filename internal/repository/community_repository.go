@@ -12,6 +12,7 @@ type CommunityRepository interface {
 	CheckCommunityNameAvailability(ctx context.Context, name string) bool
 	UpdateCommunity(context context.Context, id int, community *model.Community) error
 	GetCommunities(context context.Context) ([]model.Community, error)
+	GetUserJoinedCommunities(context context.Context, userID int) ([]model.Community, error)
 	GetCommunityDetailByID(context context.Context, id int) (*model.Community, error)
 	CheckMembership(ctx context.Context, communityID, userID int) (*model.CommunityMember, error)
 	AddCommunityMember(ctx context.Context, member *model.CommunityMember) error
@@ -116,4 +117,21 @@ func (r *CommunityRepositoryImpl) GetCommunityPosts(ctx context.Context, communi
 	}
 
 	return communityPosts, nil
+}
+
+func (r *CommunityRepositoryImpl) GetUserJoinedCommunities(context context.Context, userID int) ([]model.Community, error) {
+	var communities []model.Community
+
+	query := `
+		SELECT c.*
+		FROM community_members cm
+		INNER JOIN communities c ON cm.community_id = c.id
+		WHERE cm.user_id = ? AND cm.banned = false
+	`
+
+	if err := r.db.WithContext(context).Raw(query, userID).Scan(&communities).Error; err != nil {
+		return nil, err
+	}
+
+	return communities, nil
 }

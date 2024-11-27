@@ -14,6 +14,7 @@ import (
 type CommunityController interface {
 	CreateCommunity(w http.ResponseWriter, r *http.Request)
 	GetCommunities(w http.ResponseWriter, r *http.Request)
+	GetUserJoinedCommunities(w http.ResponseWriter, r *http.Request)
 	JoinCommunity(w http.ResponseWriter, r *http.Request)
 	GetCommunityPosts(w http.ResponseWriter, r *http.Request)
 	GetCommunityDetail(w http.ResponseWriter, r *http.Request)
@@ -210,5 +211,32 @@ func (c *CommunityControllerImpl) GetCommunityDetail(w http.ResponseWriter, r *h
 		Data:    *community,
 	}
 
+	httputil.WriteResponse(w, http.StatusOK, response)
+}
+
+func (c *CommunityControllerImpl) GetUserJoinedCommunities(w http.ResponseWriter, r *http.Request) {
+	var requestBody struct {
+		UserID int `json:"user_id"`
+	}
+
+	if err := httputil.ReadRequest(r, &requestBody); err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+		return
+	}
+
+	userCommunities, err := c.CommunityRepository.GetUserJoinedCommunities(context.Background(), requestBody.UserID)
+
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving communities"})
+		return
+	}
+
+	response := struct {
+		Message string            `json:"message"`
+		Data    []model.Community `json:"data"`
+	}{
+		Message: "Communities has been retrieved",
+		Data:    userCommunities,
+	}
 	httputil.WriteResponse(w, http.StatusOK, response)
 }
