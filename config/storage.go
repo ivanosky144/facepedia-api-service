@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/joho/godotenv"
 )
 
 type S3Config struct {
@@ -20,6 +21,11 @@ var S3Client *s3.Client
 var S3Bucket string
 
 func InitS3() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Error loading env file: %v", err)
+	}
+
 	awsRegion := os.Getenv("AWS_REGION")
 	awsAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
 	awsSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")

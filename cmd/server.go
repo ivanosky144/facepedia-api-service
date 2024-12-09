@@ -60,6 +60,7 @@ func main() {
 	log.Println("Auto-migration completed.")
 
 	config.InitRedis()
+	config.InitS3()
 
 	router := router.Routes(db)
 	protectedRoutes := EnableCors(router)

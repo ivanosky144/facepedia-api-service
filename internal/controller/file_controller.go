@@ -8,7 +8,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/temuka-api-service/config"
 	httputil "github.com/temuka-api-service/pkg/http"
 )
@@ -56,7 +55,6 @@ func (h *FileUploadHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		Key:         aws.String(s3Key),
 		Body:        file,
 		ContentType: aws.String(handler.Header.Get("Content-Type")),
-		ACL:         types.ObjectCannedACLPublicRead,
 	})
 
 	if err != nil {

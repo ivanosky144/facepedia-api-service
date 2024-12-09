@@ -81,7 +81,7 @@ func Routes(db *gorm.DB) *mux.Router {
 
 	fileRouter := router.PathPrefix("/api/file").Subrouter()
 	fileRouter.Use(middleware.CheckAuth)
-	fileRouter.HandleFunc("/", fileUploadController.Upload).Methods("POST")
+	fileRouter.HandleFunc("", fileUploadController.Upload).Methods("POST")
 
 	notificationRouter := router.PathPrefix("/api/notification").Subrouter()
 	notificationRouter.HandleFunc("/list/{user_id}", notificationController.GetNotificationsByUser).Methods("GET")
