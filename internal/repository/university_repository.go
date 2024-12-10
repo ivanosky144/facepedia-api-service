@@ -13,6 +13,7 @@ type UniversityRepository interface {
 	GetUniversities(ctx context.Context) ([]model.University, error)
 	DeleteUniversity(ctx context.Context, id int) error
 	GetUniversityDetailByID(ctx context.Context, id int) (*model.University, error)
+	GetUniversityDetailBySlug(ctx context.Context, slug string) (*model.University, error)
 }
 
 type UniversityRepositoryImpl struct {
@@ -48,6 +49,14 @@ func (r *UniversityRepositoryImpl) GetUniversities(ctx context.Context) ([]model
 func (r *UniversityRepositoryImpl) GetUniversityDetailByID(ctx context.Context, id int) (*model.University, error) {
 	var university model.University
 	if err := r.db.WithContext(ctx).First(&university, id).Error; err != nil {
+		return nil, err
+	}
+	return &university, nil
+}
+
+func (r *UniversityRepositoryImpl) GetUniversityDetailBySlug(ctx context.Context, slug string) (*model.University, error) {
+	var university model.University
+	if err := r.db.WithContext(ctx).Where("slug = ?", slug).First(&university).Error; err != nil {
 		return nil, err
 	}
 	return &university, nil

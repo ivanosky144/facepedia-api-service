@@ -117,15 +117,9 @@ func (c *UniversityControllerImpl) UpdateUniversity(w http.ResponseWriter, r *ht
 
 func (c *UniversityControllerImpl) GetUniversityDetail(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	universityIDstr := vars["id"]
+	universitySlugstr := vars["slug"]
 
-	universityID, err := strconv.Atoi(universityIDstr)
-	if err != nil {
-		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid university id"})
-		return
-	}
-
-	university, err := c.UniversityRepository.GetUniversityDetailByID(context.Background(), universityID)
+	university, err := c.UniversityRepository.GetUniversityDetailBySlug(context.Background(), universitySlugstr)
 	if err != nil {
 		httputil.WriteResponse(w, http.StatusNotFound, map[string]string{"error": "University not found"})
 		return
@@ -135,7 +129,7 @@ func (c *UniversityControllerImpl) GetUniversityDetail(w http.ResponseWriter, r 
 		Message string           `json:"message"`
 		Data    model.University `json:"data"`
 	}{
-		Message: "Post has been updated",
+		Message: "University detail has been retrieved",
 		Data:    *university,
 	}
 

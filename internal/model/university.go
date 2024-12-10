@@ -11,6 +11,7 @@ type University struct {
 	ID             int       `gorm:"primary_key;university_id"`
 	Name           string    `gorm:"column:name"`
 	Slug           string    `gorm:"column:slug"`
+	Logo           string    `gorm:"column:logo"`
 	Summary        string    `gorm:"column:summary"`
 	LocationID     int       `gorm:"column:location_id"`
 	Website        string    `gorm:"column:website"`
@@ -18,6 +19,8 @@ type University struct {
 	TotalReviews   *int      `gorm:"column:total_reviews"`
 	TotalMajors    *int      `gorm:"column:total_majors"`
 	Rating         *int      `gorm:"column:rating"`
+	Type           string    `gorm:"column:type"`
+	Accreditation  string    `gorm:"column:accreditation"`
 	MinTuition     int       `gorm:"column:min_tuition"`
 	MaxTuition     int       `gorm:"column:max_tuition"`
 	AcceptanceRate float32   `gorm:"column:acceptance_rate"`
