@@ -34,9 +34,10 @@ func NewCommunityController(repo repository.CommunityRepository) CommunityContro
 
 func (c *CommunityControllerImpl) CreateCommunity(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		LogoPicture string `json:"logo_picture"`
+		Name         string `json:"name"`
+		Description  string `json:"description"`
+		LogoPicture  string `json:"logo_picture"`
+		CoverPicture string `json:"cover_picture"`
 	}
 
 	if err := httputil.ReadRequest(r, &requestBody); err != nil {
@@ -99,9 +100,10 @@ func (c *CommunityControllerImpl) UpdateCommunity(w http.ResponseWriter, r *http
 	}
 
 	var requestBody struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		LogoPicture string `json:"logo_picture"`
+		Name         string `json:"name"`
+		Description  string `json:"description"`
+		LogoPicture  string `json:"logo_picture"`
+		CoverPicture string `json:"cover_picture"`
 	}
 
 	if err := httputil.ReadRequest(r, &requestBody); err != nil {
@@ -110,9 +112,10 @@ func (c *CommunityControllerImpl) UpdateCommunity(w http.ResponseWriter, r *http
 	}
 
 	updatedCommunity := model.Community{
-		Name:        requestBody.Name,
-		Description: requestBody.Description,
-		LogoPicture: requestBody.LogoPicture,
+		Name:         requestBody.Name,
+		Description:  requestBody.Description,
+		LogoPicture:  requestBody.LogoPicture,
+		CoverPicture: requestBody.CoverPicture,
 	}
 
 	if err := c.CommunityRepository.UpdateCommunity(context.Background(), communityID, &updatedCommunity); err != nil {

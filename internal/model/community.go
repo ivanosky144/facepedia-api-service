@@ -15,6 +15,7 @@ type Community struct {
 	MembersCount     int               `gorm:"column:members_count"`
 	PostsCount       int               `gorm:"column:posts_count"`
 	LogoPicture      string            `gorm:"column:logo_picture"`
+	CoverPicture     string            `gorm:"column:cover_picture"`
 	CommunityMembers []CommunityMember `gorm:"foreignKey:CommunityID"`
 	Moderators       []Moderator       `gorm:"foreignKey:CommunityID"`
 	CommunityPosts   []CommunityPost   `gorm:"foreignKey:CommunityID"`
