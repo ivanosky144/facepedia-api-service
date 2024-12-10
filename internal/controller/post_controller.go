@@ -33,15 +33,17 @@ type PostControllerImpl struct {
 	UserRepository         repository.UserRepository
 	ReportRepository       repository.ReportRepository
 	CommunityRepository    repository.CommunityRepository
+	CommentRepository      repository.CommentRepository
 }
 
-func NewPostController(postRepo repository.PostRepository, notificationRepo repository.NotificationRepository, userRepo repository.UserRepository, reportRepo repository.ReportRepository, communityRepo repository.CommunityRepository) PostController {
+func NewPostController(postRepo repository.PostRepository, notificationRepo repository.NotificationRepository, userRepo repository.UserRepository, reportRepo repository.ReportRepository, communityRepo repository.CommunityRepository, commentRepo repository.CommentRepository) PostController {
 	return &PostControllerImpl{
 		PostRepository:         postRepo,
 		NotificationRepository: notificationRepo,
 		UserRepository:         userRepo,
 		ReportRepository:       reportRepo,
 		CommunityRepository:    communityRepo,
+		CommentRepository:      commentRepo,
 	}
 }
 
@@ -101,12 +103,63 @@ func (c *PostControllerImpl) GetPostDetail(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	user, err := c.UserRepository.GetUserByID(context.Background(), post.UserID)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusNotFound, map[string]string{"error": "User not found"})
+		return
+	}
+
+	comments, err := c.CommentRepository.GetCommentsByPostID(context.Background(), postID)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving comments"})
+		return
+	}
+
+	type Comment struct {
+		ID        int       `json:"ID"`
+		Content   string    `json:"Content"`
+		Username  string    `json:"Username"`
+		UserPhoto string    `json:"Userphoto"`
+		Votes     int       `json:"Votes"`
+		CreatedAt time.Time `json:"CreatedAt"`
+		UpdatedAt time.Time `json:"UpdatedAt"`
+	}
+
+	postComments := make([]Comment, 0, len(comments))
+	for _, comment := range comments {
+		commentUser, err := c.UserRepository.GetUserByID(context.Background(), comment.UserID)
+		if err != nil {
+			httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving comment user"})
+			return
+		}
+
+		postComments = append(postComments, Comment{
+			ID:        comment.ID,
+			Content:   comment.Content,
+			Username:  commentUser.Username,
+			UserPhoto: commentUser.ProfilePicture,
+			Votes:     len(comment.Votes),
+			CreatedAt: comment.CreatedAt,
+			UpdatedAt: comment.UpdatedAt,
+		})
+	}
+
+	type ResponseData struct {
+		Username string     `json:"username"`
+		Post     model.Post `json:"post"`
+		Comments []Comment  `json:"comments"`
+	}
+
 	response := struct {
-		Message string     `json:"message"`
-		Data    model.Post `json:"data"`
+		Message string       `json:"message"`
+		Data    ResponseData `json:"data"`
 	}{
 		Message: "Post detail has been retrieved",
-		Data:    *post,
+		Data: ResponseData{
+			Username: user.Username,
+			Post:     *post,
+			Comments: postComments,
+		},
 	}
 
 	httputil.WriteResponse(w, http.StatusOK, response)

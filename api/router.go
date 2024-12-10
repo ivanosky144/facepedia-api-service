@@ -27,7 +27,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	// Init controllers
 	authController := controller.NewAuthController(userRepo)
 	userController := controller.NewUserController(userRepo)
-	postController := controller.NewPostController(postRepo, notificationRepo, userRepo, reportRepo, communityRepo)
+	postController := controller.NewPostController(postRepo, notificationRepo, userRepo, reportRepo, communityRepo, commentRepo)
 	communityController := controller.NewCommunityController(communityRepo)
 	commentController := controller.NewCommentController(commentRepo, postRepo, notificationRepo, reportRepo)
 	notificationController := controller.NewNotificationController(notificationRepo)
@@ -56,11 +56,11 @@ func Routes(db *gorm.DB) *mux.Router {
 	postRouter := router.PathPrefix("/api/post").Subrouter()
 	postRouter.Use(middleware.CheckAuth)
 	postRouter.HandleFunc("", postController.CreatePost).Methods("POST")
+	postRouter.HandleFunc("/{id}", postController.GetPostDetail).Methods("GET")
 	postRouter.HandleFunc("/timeline/{user_id}", postController.GetTimelinePosts).Methods("GET")
 	postRouter.HandleFunc("/{user_id}", postController.GetUserPosts).Methods("GET")
 	postRouter.HandleFunc("/like/{id}", postController.LikePost).Methods("PUT")
 	postRouter.HandleFunc("/{id}", postController.DeletePost).Methods("DELETE")
-	postRouter.HandleFunc("/{id}", postController.GetPostDetail).Methods("GET")
 	postRouter.HandleFunc("/{id}", postController.UpdatePost).Methods("PUT")
 
 	commentRouter := router.PathPrefix("/api/comment").Subrouter()
