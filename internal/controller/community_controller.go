@@ -14,6 +14,8 @@ import (
 type CommunityController interface {
 	CreateCommunity(w http.ResponseWriter, r *http.Request)
 	GetCommunities(w http.ResponseWriter, r *http.Request)
+	DeleteCommunity(w http.ResponseWriter, r *http.Request)
+	UpdateCommunity(w http.ResponseWriter, r *http.Request)
 	GetUserJoinedCommunities(w http.ResponseWriter, r *http.Request)
 	JoinCommunity(w http.ResponseWriter, r *http.Request)
 	GetCommunityPosts(w http.ResponseWriter, r *http.Request)
@@ -33,8 +35,8 @@ func NewCommunityController(repo repository.CommunityRepository) CommunityContro
 func (c *CommunityControllerImpl) CreateCommunity(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
 		Name        string `json:"name"`
-		Description string `json:"desc"`
-		LogoPicture string `json:"logopicture"`
+		Description string `json:"description"`
+		LogoPicture string `json:"logo_picture"`
 	}
 
 	if err := httputil.ReadRequest(r, &requestBody); err != nil {
@@ -82,6 +84,48 @@ func (c *CommunityControllerImpl) GetCommunities(w http.ResponseWriter, r *http.
 	}{
 		Message: "Communities have been retireved",
 		Data:    communities,
+	}
+	httputil.WriteResponse(w, http.StatusOK, response)
+}
+
+func (c *CommunityControllerImpl) UpdateCommunity(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	communityIDstr := vars["id"]
+	communityID, err := strconv.Atoi(communityIDstr)
+
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Invalid community id"})
+		return
+	}
+
+	var requestBody struct {
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		LogoPicture string `json:"logo_picture"`
+	}
+
+	if err := httputil.ReadRequest(r, &requestBody); err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+		return
+	}
+
+	updatedCommunity := model.Community{
+		Name:        requestBody.Name,
+		Description: requestBody.Description,
+		LogoPicture: requestBody.LogoPicture,
+	}
+
+	if err := c.CommunityRepository.UpdateCommunity(context.Background(), communityID, &updatedCommunity); err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error updating community"})
+		return
+	}
+
+	response := struct {
+		Message string          `json:"message"`
+		Data    model.Community `json:"data"`
+	}{
+		Message: "Communities have been retireved",
+		Data:    updatedCommunity,
 	}
 	httputil.WriteResponse(w, http.StatusOK, response)
 }
@@ -146,6 +190,30 @@ func (c *CommunityControllerImpl) JoinCommunity(w http.ResponseWriter, r *http.R
 	}{
 		Message: "Successfully joined the community",
 	}
+	httputil.WriteResponse(w, http.StatusOK, response)
+}
+
+func (c *CommunityControllerImpl) DeleteCommunity(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	communityIDstr := vars["id"]
+
+	communityID, err := strconv.Atoi(communityIDstr)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid community"})
+		return
+	}
+
+	if err := c.CommunityRepository.DeleteCommunity(context.Background(), communityID); err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error deleting community"})
+		return
+	}
+
+	response := struct {
+		Message string `json:"message"`
+	}{
+		Message: "Community has been deleted",
+	}
+
 	httputil.WriteResponse(w, http.StatusOK, response)
 }
 

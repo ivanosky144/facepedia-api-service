@@ -19,6 +19,7 @@ type CommunityRepository interface {
 	GetCommunityPosts(ctx context.Context, id int, filters map[string]interface{}) ([]model.CommunityPost, error)
 	UpdateCommunityPostsCount(context context.Context, id int) error
 	UpdateCommunityMembersCount(context context.Context, id int) error
+	DeleteCommunity(context context.Context, id int) error
 }
 
 type CommunityRepositoryImpl struct {
@@ -62,6 +63,10 @@ func (r *CommunityRepositoryImpl) GetCommunities(context context.Context) ([]mod
 		return nil, err
 	}
 	return communities, nil
+}
+
+func (r *CommunityRepositoryImpl) DeleteCommunity(context context.Context, id int) error {
+	return r.db.WithContext(context).Delete(&model.Community{}, id).Error
 }
 
 func (r *CommunityRepositoryImpl) AddCommunityMember(ctx context.Context, member *model.CommunityMember) error {
