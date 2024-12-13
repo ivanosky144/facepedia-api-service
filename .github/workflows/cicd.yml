@@ -43,8 +43,8 @@ jobs:
 
       - name: Delete Old Container
         run: |
-          docker stop temuka-main-api-service || true
-          docker rm temuka-main-api-service || true
+          sudo docker stop temuka-main-api-service || true
+          sudo docker rm temuka-main-api-service || true
 
       - name: Run Docker Container
         run: |
