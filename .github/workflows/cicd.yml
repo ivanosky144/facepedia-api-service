@@ -3,7 +3,7 @@ name: Deploy Main API Service
 on:
   push:
     branches:
-      - deploy-to-ec2
+      - master
 
 jobs:
   build:
