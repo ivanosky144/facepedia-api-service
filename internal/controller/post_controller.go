@@ -203,13 +203,26 @@ func (c *PostControllerImpl) UpdatePost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var post model.Post
-	if err := httputil.ReadRequest(r, &post); err != nil {
+
+	var requestBody struct {
+		UserID      int    `json:"user_id"`
+		Title       string `json:"title"`
+		Description string `json:"description"`
+	}
+
+	if err := httputil.ReadRequest(r, &requestBody); err != nil {
 		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		return
 	}
 
+	updatedPost := model.Post{
+		UserID:      requestBody.UserID,
+		Title:       requestBody.Title,
+		Description: requestBody.Description,
+	}
+
 	post.ID = postID
-	if err := c.PostRepository.UpdatePost(context.Background(), postID, &post); err != nil {
+	if err := c.PostRepository.UpdatePost(context.Background(), postID, &updatedPost); err != nil {
 		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error updating post"})
 		return
 	}

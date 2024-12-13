@@ -20,10 +20,11 @@ type FileUploadHandler struct {
 func NewFileUploadController(uploadDir string) *FileUploadHandler {
 	return &FileUploadHandler{
 		AllowedExtensions: map[string]bool{
-			".jpg": true,
-			".png": true,
-			".mp4": true,
-			".mkv": true,
+			".jpg":  true,
+			".png":  true,
+			".mp4":  true,
+			".mkv":  true,
+			".jpeg": true,
 		},
 		UploadDirectory: uploadDir,
 	}
