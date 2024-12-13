@@ -48,6 +48,6 @@ jobs:
 
       - name: Run Docker Container
         run: |
-          docker run -d -p 3200:${{ secrets.SERVER_PORT }} \
+          sudo docker run -d -p 3200:${{ secrets.SERVER_PORT }} \
             --name temuka-main-api-service \
             ivanoskytan/temuka-main-api-service:latest
