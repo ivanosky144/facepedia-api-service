@@ -39,7 +39,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Pull Docker Image
-        run: docker pull ivanoskytan/temuka-main-api-service:latest
+        run: sudo docker pull ivanoskytan/temuka-main-api-service:latest
 
       - name: Delete Old Container
         run: |
