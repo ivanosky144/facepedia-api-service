@@ -1,18 +1,12 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 
 	router "github.com/temuka-api-service/api"
 	"github.com/temuka-api-service/config"
-	"github.com/temuka-api-service/internal/model"
 	"gorm.io/gorm"
-)
-
-var (
-	Ctx = context.Background()
 )
 
 func EnableCors(next http.Handler) http.Handler {
@@ -35,29 +29,6 @@ func main() {
 	if config.Database == nil {
 		log.Fatal("Database connection is nil")
 	}
-	if err := config.Database.AutoMigrate(
-		&model.User{},
-		&model.Community{},
-		&model.Post{},
-		&model.Conversation{},
-		&model.Comment{},
-		&model.CommunityMember{},
-		&model.CommunityPost{},
-		&model.Moderator{},
-		&model.Participant{},
-		&model.UserFollow{},
-		&model.Notification{},
-		&model.Report{},
-		&model.Location{},
-		&model.University{},
-		&model.Review{},
-		&model.Major{},
-		&model.MajorReview{},
-	); err != nil {
-		log.Fatalf("Failed to auto-migrate database: %v", err)
-	}
-	log.Printf("Database : %v", db)
-	log.Println("Auto-migration completed.")
 
 	config.InitRedis()
 	config.InitS3()
@@ -69,7 +40,6 @@ func main() {
 	go config.RecentHub.Run()
 
 	http.Handle("/", protectedRoutes)
-
 	log.Println("Server is listening on port 3200")
 	log.Fatal(http.ListenAndServe("localhost:3200", nil))
 }
