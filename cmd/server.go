@@ -48,9 +48,9 @@ func main() {
 		&model.UserFollow{},
 		&model.Notification{},
 		&model.Report{},
-		&model.Review{},
 		&model.Location{},
 		&model.University{},
+		&model.Review{},
 		&model.Major{},
 		&model.MajorReview{},
 	); err != nil {

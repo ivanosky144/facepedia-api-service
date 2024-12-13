@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/temuka-api-service/internal/model"
@@ -52,6 +53,7 @@ func (c *CommunityControllerImpl) CreateCommunity(w http.ResponseWriter, r *http
 
 	newCommunity := model.Community{
 		Name:        requestBody.Name,
+		Slug:        strings.ReplaceAll(strings.ToLower(requestBody.Name), " ", "_"),
 		Description: requestBody.Description,
 		LogoPicture: requestBody.LogoPicture,
 	}
@@ -101,6 +103,7 @@ func (c *CommunityControllerImpl) UpdateCommunity(w http.ResponseWriter, r *http
 
 	var requestBody struct {
 		Name         string `json:"name"`
+		Slug         string `json:"slug"`
 		Description  string `json:"description"`
 		LogoPicture  string `json:"logo_picture"`
 		CoverPicture string `json:"cover_picture"`
@@ -113,6 +116,7 @@ func (c *CommunityControllerImpl) UpdateCommunity(w http.ResponseWriter, r *http
 
 	updatedCommunity := model.Community{
 		Name:         requestBody.Name,
+		Slug:         requestBody.Slug,
 		Description:  requestBody.Description,
 		LogoPicture:  requestBody.LogoPicture,
 		CoverPicture: requestBody.CoverPicture,
@@ -260,15 +264,9 @@ func (c *CommunityControllerImpl) GetCommunityPosts(w http.ResponseWriter, r *ht
 
 func (c *CommunityControllerImpl) GetCommunityDetail(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	communityIDstr := vars["id"]
+	slugStr := vars["slug"]
 
-	communityID, err := strconv.Atoi(communityIDstr)
-	if err != nil {
-		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid community id"})
-		return
-	}
-
-	community, err := c.CommunityRepository.GetCommunityDetailByID(context.Background(), communityID)
+	community, err := c.CommunityRepository.GetCommunityDetailBySlug(context.Background(), slugStr)
 	if err != nil {
 		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving community detail"})
 		return

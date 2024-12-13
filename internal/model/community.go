@@ -10,6 +10,7 @@ type Community struct {
 	gorm.Model
 	ID               int               `gorm:"primary_key;column:id"`
 	Name             string            `gorm:"column:name"`
+	Slug             string            `gorm:"column:slug"`
 	Description      string            `gorm:"column:desc"`
 	Rules            string            `gorm:"column:rules"`
 	MembersCount     int               `gorm:"column:members_count"`

@@ -77,7 +77,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	communityRouter.HandleFunc("/join/{community_id}", communityController.JoinCommunity).Methods("POST")
 	communityRouter.HandleFunc("/post/{id}", communityController.GetCommunityPosts).Methods("GET")
 	communityRouter.HandleFunc("/user", communityController.GetUserJoinedCommunities).Methods("POST")
-	communityRouter.HandleFunc("/{id}", communityController.GetCommunityDetail).Methods("GET")
+	communityRouter.HandleFunc("/{slug}", communityController.GetCommunityDetail).Methods("GET")
 	communityRouter.HandleFunc("/{id}", communityController.DeleteCommunity).Methods("DELETE")
 	communityRouter.HandleFunc("/{id}", communityController.UpdateCommunity).Methods("PUT")
 

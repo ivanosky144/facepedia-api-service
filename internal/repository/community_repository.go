@@ -20,6 +20,7 @@ type CommunityRepository interface {
 	UpdateCommunityPostsCount(context context.Context, id int) error
 	UpdateCommunityMembersCount(context context.Context, id int) error
 	DeleteCommunity(context context.Context, id int) error
+	GetCommunityDetailBySlug(ctx context.Context, slug string) (*model.Community, error)
 }
 
 type CommunityRepositoryImpl struct {
@@ -139,4 +140,12 @@ func (r *CommunityRepositoryImpl) GetUserJoinedCommunities(context context.Conte
 	}
 
 	return communities, nil
+}
+
+func (r *CommunityRepositoryImpl) GetCommunityDetailBySlug(ctx context.Context, slug string) (*model.Community, error) {
+	var community model.Community
+	if err := r.db.WithContext(ctx).Where("slug = ?", slug).First(&community).Error; err != nil {
+		return nil, err
+	}
+	return &community, nil
 }
