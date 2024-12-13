@@ -50,5 +50,4 @@ jobs:
         run: |
           docker run -d -p 3200:${{ secrets.SERVER_PORT }} \
             --name temuka-main-api-service \
-            --env-file .env \
             ivanoskytan/temuka-main-api-service:latest
