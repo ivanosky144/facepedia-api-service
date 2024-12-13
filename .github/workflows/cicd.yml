@@ -29,17 +29,17 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t your-dockerhub-username/temuka-main-api-service .
+        run: docker build -t ivanoskytan/temuka-main-api-service .
 
       - name: Push Docker Image
-        run: docker push your-dockerhub-username/temuka-main-api-service:latest
+        run: docker push ivanoskytan/temuka-main-api-service:latest
 
   deploy:
     needs: build
     runs-on: self-hosted
     steps:
       - name: Pull Docker Image
-        run: docker pull your-dockerhub-username/temuka-main-api-service:latest
+        run: docker pull ivanoskytan/temuka-main-api-service:latest
 
       - name: Delete Old Container
         run: |
@@ -51,4 +51,4 @@ jobs:
           docker run -d -p 3200:${{ secrets.SERVER_PORT }} \
             --name temuka-main-api-service \
             --env-file .env \
-            your-dockerhub-username/temuka-main-api-service:latest
+            ivanoskytan/temuka-main-api-service:latest
