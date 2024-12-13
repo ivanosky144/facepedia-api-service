@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY go.mod go.sum ./
 
-RUN god mod download
+RUN god mod tidy
 
 COPY . .
 
