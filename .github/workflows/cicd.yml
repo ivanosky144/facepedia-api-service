@@ -1,0 +1,54 @@
+name: Deploy Main API Service
+
+on:
+  push:
+    branches:
+      - deploy-to-ec2
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: |
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> .env
+          echo "PG_HOST=${{ secrets.PG_HOST }}" >> .env
+          echo "PG_USER=${{ secrets.PG_USER }}" >> .env
+          echo "PG_PASSWORD=${{ secrets.PG_PASSWORD }}" >> .env
+          echo "PG_PORT=${{ secrets.PG_PORT }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" >> .env
+
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: docker build -t your-dockerhub-username/temuka-main-api-service .
+
+      - name: Push Docker Image
+        run: docker push your-dockerhub-username/temuka-main-api-service:latest
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Pull Docker Image
+        run: docker pull your-dockerhub-username/temuka-main-api-service:latest
+
+      - name: Delete Old Container
+        run: |
+          docker stop temuka-main-api-service || true
+          docker rm temuka-main-api-service || true
+
+      - name: Run Docker Container
+        run: |
+          docker run -d -p 3200:${{ secrets.SERVER_PORT }} \
+            --name temuka-main-api-service \
+            --env-file .env \
+            your-dockerhub-username/temuka-main-api-service:latest

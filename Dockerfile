@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine
+FROM golang:1.22.2-alpine
 
 WORKDIR /app
 
@@ -8,6 +8,10 @@ RUN god mod download
 
 COPY . .
 
-RUN go build -o index .
+RUN go build -o main ./cmd/server/main.go
 
-CMD ["./index"]
+RUN chmod +x main
+
+EXPOSE 3200
+
+CMD ["./main"]
