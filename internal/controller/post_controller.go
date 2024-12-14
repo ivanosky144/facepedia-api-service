@@ -50,7 +50,7 @@ func NewPostController(postRepo repository.PostRepository, notificationRepo repo
 func (c *PostControllerImpl) CreatePost(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
 		Title       string `json:"title"`
-		Description string `json:"desc"`
+		Description string `json:"description"`
 		UserID      int    `json:"user_id"`
 		CommunityID int    `json:"community_id"`
 	}
