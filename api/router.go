@@ -58,7 +58,7 @@ func Routes(db *gorm.DB) *mux.Router {
 	postRouter.HandleFunc("", postController.CreatePost).Methods("POST")
 	postRouter.HandleFunc("/{id}", postController.GetPostDetail).Methods("GET")
 	postRouter.HandleFunc("/timeline/{user_id}", postController.GetTimelinePosts).Methods("GET")
-	postRouter.HandleFunc("/{user_id}", postController.GetUserPosts).Methods("GET")
+	postRouter.HandleFunc("/user/{user_id}", postController.GetUserPosts).Methods("GET")
 	postRouter.HandleFunc("/like/{id}", postController.LikePost).Methods("PUT")
 	postRouter.HandleFunc("/{id}", postController.DeletePost).Methods("DELETE")
 	postRouter.HandleFunc("/{id}", postController.UpdatePost).Methods("PUT")
