@@ -115,6 +115,11 @@ func (c *PostControllerImpl) GetPostDetail(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	type UserData struct {
+		Username       string `json:"Username"`
+		ProfilePicture string `json:"ProfilePicture"`
+	}
+
 	type Comment struct {
 		ID        int       `json:"ID"`
 		Content   string    `json:"Content"`
@@ -144,8 +149,13 @@ func (c *PostControllerImpl) GetPostDetail(w http.ResponseWriter, r *http.Reques
 		})
 	}
 
+	userData := UserData{
+		Username:       user.Username,
+		ProfilePicture: user.ProfilePicture,
+	}
+
 	type ResponseData struct {
-		Username string     `json:"username"`
+		User     UserData   `json:"user"`
 		Post     model.Post `json:"post"`
 		Comments []Comment  `json:"comments"`
 	}
@@ -156,7 +166,7 @@ func (c *PostControllerImpl) GetPostDetail(w http.ResponseWriter, r *http.Reques
 	}{
 		Message: "Post detail has been retrieved",
 		Data: ResponseData{
-			Username: user.Username,
+			User:     userData,
 			Post:     *post,
 			Comments: postComments,
 		},

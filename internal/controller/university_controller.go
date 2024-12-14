@@ -35,13 +35,17 @@ func NewUniversityController(universityRepo repository.UniversityRepository, rev
 
 func (c *UniversityControllerImpl) AddUniversity(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
-		Name       string `json:"name"`
-		Summary    string `json:"summary"`
-		LocationID int    `json:"location_id"`
-		Website    string `json:"website"`
-		Address    string `json:"address"`
-		MinTuition int    `json:min_tuition`
-		MaxTuition int    `json:max_tuition`
+		Name          string `json:"name"`
+		Summary       string `json:"summary"`
+		LocationID    int    `json:"location_id"`
+		Website       string `json:"website"`
+		Address       string `json:"address"`
+		MinTuition    int    `json:"min_tuition"`
+		MaxTuition    int    `json:"max_tuition"`
+		TotalMajors   int    `json:"total_majors"`
+		Logo          string `json:"logo"`
+		Type          string `json:"type"`
+		Accreditation string `json:"accreditation"`
 	}
 
 	if err := httputil.ReadRequest(r, &requestBody); err != nil {
@@ -50,14 +54,16 @@ func (c *UniversityControllerImpl) AddUniversity(w http.ResponseWriter, r *http.
 	}
 
 	newUniversity := model.University{
-		Name:       requestBody.Name,
-		Slug:       strings.ReplaceAll(strings.ToLower(requestBody.Name), " ", "_"),
-		Summary:    requestBody.Summary,
-		LocationID: requestBody.LocationID,
-		Website:    requestBody.Website,
-		Address:    requestBody.Address,
-		MinTuition: requestBody.MinTuition,
-		MaxTuition: requestBody.MaxTuition,
+		Name:        requestBody.Name,
+		Slug:        strings.ReplaceAll(strings.ToLower(requestBody.Name), " ", "_"),
+		Summary:     requestBody.Summary,
+		LocationID:  requestBody.LocationID,
+		Website:     requestBody.Website,
+		Address:     requestBody.Address,
+		TotalMajors: &requestBody.TotalMajors,
+		MinTuition:  requestBody.MinTuition,
+		MaxTuition:  requestBody.MaxTuition,
+		Logo:        requestBody.Logo,
 	}
 
 	if err := c.UniversityRepository.CreateUniversity(context.Background(), &newUniversity); err != nil {
@@ -92,12 +98,41 @@ func (c *UniversityControllerImpl) UpdateUniversity(w http.ResponseWriter, r *ht
 		return
 	}
 
-	var updatedUniversity model.University
+	var requestBody struct {
+		Name          string `json:"name"`
+		Summary       string `json:"summary"`
+		LocationID    int    `json:"location_id"`
+		Website       string `json:"website"`
+		Address       string `json:"address"`
+		MinTuition    int    `json:"min_tuition"`
+		MaxTuition    int    `json:"max_tuition"`
+		TotalMajors   int    `json:"total_majors"`
+		Logo          string `json:"logo"`
+		Type          string `json:"type"`
+		Accreditation string `json:"accreditation"`
+	}
 
-	if err := httputil.ReadRequest(r, &updatedUniversity); err != nil {
+	if err := httputil.ReadRequest(r, &requestBody); err != nil {
 		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		return
 	}
+
+	updatedUniversity := model.University{
+		Name:          requestBody.Name,
+		Slug:          strings.ReplaceAll(strings.ToLower(requestBody.Name), " ", "_"),
+		Summary:       requestBody.Summary,
+		LocationID:    requestBody.LocationID,
+		Website:       requestBody.Website,
+		Address:       requestBody.Address,
+		TotalMajors:   &requestBody.TotalMajors,
+		MinTuition:    requestBody.MinTuition,
+		MaxTuition:    requestBody.MaxTuition,
+		Type:          requestBody.Type,
+		Accreditation: requestBody.Accreditation,
+		Logo:          requestBody.Logo,
+	}
+
+	university.ID = universityID
 
 	if err := c.UniversityRepository.UpdateUniversity(context.Background(), university.ID, &updatedUniversity); err != nil {
 		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error updating university"})

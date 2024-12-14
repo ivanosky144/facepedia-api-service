@@ -133,23 +133,36 @@ func (c *UserControllerImpl) UpdateUser(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var user model.User
-	if err := httputil.ReadRequest(r, &user); err != nil {
+
+	var requestBody struct {
+		Username       string `json:"username"`
+		Desc           string `json:"desc"`
+		Displayname    string `json:"displayname"`
+		ProfilePicture string `json:"profile_picture"`
+	}
+
+	if err := httputil.ReadRequest(r, &requestBody); err != nil {
 		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		return
 	}
 
+	updatedUser := model.User{
+		Username:       requestBody.Username,
+		Desc:           requestBody.Desc,
+		Displayname:    requestBody.Displayname,
+		ProfilePicture: requestBody.ProfilePicture,
+	}
+
 	user.ID = userID
-	if err := c.UserRepository.UpdateUser(context.Background(), userID, &user); err != nil {
+	if err := c.UserRepository.UpdateUser(context.Background(), userID, &updatedUser); err != nil {
 		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error updating user"})
 		return
 	}
 
 	response := struct {
-		Message string     `json:"message"`
-		Data    model.User `json:"data"`
+		Message string `json:"message"`
 	}{
 		Message: "User has been updated",
-		Data:    user,
 	}
 
 	httputil.WriteResponse(w, http.StatusOK, response)
