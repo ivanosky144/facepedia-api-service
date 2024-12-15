@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/temuka-api-service/internal/model"
@@ -236,5 +237,5 @@ func (c *UserControllerImpl) GetFollowers(w http.ResponseWriter, r *http.Request
 }
 
 func contains(s, substr string) bool {
-	return len(s) > 0 && len(substr) > 0 && s[len(s)-len(substr):] == substr
+	return len(s) > 0 && len(substr) > 0 && strings.Contains(s, substr)
 }
