@@ -117,6 +117,9 @@ func Routes(db *gorm.DB) *mux.Router {
 	conversationRouter.Use(middleware.CheckAuth)
 	conversationRouter.HandleFunc("", conversationController.AddConversation).Methods("POST")
 	conversationRouter.HandleFunc("", conversationController.DeleteConversation).Methods("DELETE")
+	conversationRouter.HandleFunc("/participant", conversationController.AddParticipant).Methods("POST")
+	conversationRouter.HandleFunc("/message", conversationController.AddMessage).Methods("POST")
+	conversationRouter.HandleFunc("/{user_id}", conversationController.GetConversationsByUserID).Methods("GET")
 
 	return router
 }
