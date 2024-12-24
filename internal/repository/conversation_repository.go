@@ -14,6 +14,7 @@ type ConversationRepository interface {
 	GetConversationDetailByID(ctx context.Context, id int) (*model.Conversation, error)
 	AddParticipant(ctx context.Context, participant *model.Participant) error
 	AddMessage(ctx context.Context, message *model.Message) error
+	GetMessagesByConversationID(ctx context.Context, conversationID int) ([]model.Message, error)
 }
 
 type ConversationRepositoryImpl struct {
@@ -56,5 +57,12 @@ func (r *ConversationRepositoryImpl) GetConversationDetailByID(ctx context.Conte
 
 func (r *ConversationRepositoryImpl) AddParticipant(ctx context.Context, participant *model.Participant) error {
 	return r.db.WithContext(ctx).Create(participant).Error
+}
 
+func (r *ConversationRepositoryImpl) GetMessagesByConversationID(ctx context.Context, conversationID int) ([]model.Message, error) {
+	var messages []model.Message
+	if err := r.db.WithContext(ctx).Where("conversation_id = ?", conversationID).Find(&messages).Error; err != nil {
+		return nil, err
+	}
+	return messages, nil
 }

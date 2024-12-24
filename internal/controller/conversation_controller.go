@@ -17,6 +17,8 @@ type ConversationController interface {
 	GetConversationsByUserID(w http.ResponseWriter, r *http.Request)
 	AddParticipant(w http.ResponseWriter, r *http.Request)
 	AddMessage(w http.ResponseWriter, r *http.Request)
+	GetConversationDetail(w http.ResponseWriter, r *http.Request)
+	RetrieveMessages(w http.ResponseWriter, r *http.Request)
 }
 
 type ConversationControllerImpl struct {
@@ -122,6 +124,33 @@ func (c *ConversationControllerImpl) GetConversationsByUserID(w http.ResponseWri
 	httputil.WriteResponse(w, http.StatusOK, response)
 }
 
+func (c *ConversationControllerImpl) GetConversationDetail(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	conversationIDstr := vars["id"]
+
+	conversationID, err := strconv.Atoi(conversationIDstr)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid conversation id"})
+		return
+	}
+
+	conversation, err := c.ConversationRepository.GetConversationDetailByID(context.Background(), conversationID)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error retrieving conversation detail"})
+		return
+	}
+
+	response := struct {
+		Message string             `json:"message"`
+		Data    model.Conversation `json:"data"`
+	}{
+		Message: "Conversation detail has been retrieved",
+		Data:    *conversation,
+	}
+
+	httputil.WriteResponse(w, http.StatusOK, response)
+}
+
 func (c *ConversationControllerImpl) AddParticipant(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
 		ConversationID int `json:"conversation_id"`
@@ -171,6 +200,33 @@ func (c *ConversationControllerImpl) DeleteConversation(w http.ResponseWriter, r
 		Message string `json:"message"`
 	}{
 		Message: "Conversation has been deleted",
+	}
+
+	httputil.WriteResponse(w, http.StatusOK, response)
+}
+
+func (c *ConversationControllerImpl) RetrieveMessages(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	conversationIDstr := vars["conversation_id"]
+
+	conversationID, err := strconv.Atoi(conversationIDstr)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid conversation id"})
+		return
+	}
+
+	messages, err := c.ConversationRepository.GetMessagesByConversationID(context.Background(), conversationID)
+	if err != nil {
+		httputil.WriteResponse(w, http.StatusInternalServerError, map[string]string{"error": "Error deleting conversation"})
+		return
+	}
+
+	response := struct {
+		Message string          `json:"message"`
+		Data    []model.Message `json:"data"`
+	}{
+		Message: "Conversation has been deleted",
+		Data:    messages,
 	}
 
 	httputil.WriteResponse(w, http.StatusOK, response)

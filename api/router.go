@@ -116,10 +116,12 @@ func Routes(db *gorm.DB) *mux.Router {
 	conversationRouter := router.PathPrefix("/api/conversation").Subrouter()
 	conversationRouter.Use(middleware.CheckAuth)
 	conversationRouter.HandleFunc("", conversationController.AddConversation).Methods("POST")
-	conversationRouter.HandleFunc("", conversationController.DeleteConversation).Methods("DELETE")
+	conversationRouter.HandleFunc("/{id}", conversationController.DeleteConversation).Methods("DELETE")
+	conversationRouter.HandleFunc("/{id}", conversationController.GetConversationDetail).Methods("GET")
 	conversationRouter.HandleFunc("/participant", conversationController.AddParticipant).Methods("POST")
 	conversationRouter.HandleFunc("/message", conversationController.AddMessage).Methods("POST")
-	conversationRouter.HandleFunc("/{user_id}", conversationController.GetConversationsByUserID).Methods("GET")
+	conversationRouter.HandleFunc("/message/{conversation_id}", conversationController.RetrieveMessages).Methods("GET")
+	conversationRouter.HandleFunc("/all/{user_id}", conversationController.GetConversationsByUserID).Methods("GET")
 
 	return router
 }
