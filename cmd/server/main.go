@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
 	router "github.com/temuka-api-service/api"
 	"github.com/temuka-api-service/config"
+	"github.com/temuka-api-service/pkg/redis"
 	"gorm.io/gorm"
 )
 
@@ -38,6 +40,8 @@ func main() {
 
 	http.HandleFunc("/chat", config.HandleWebSocket)
 	go config.RecentHub.Run()
+
+	go redis.Subscribe(context.Background())
 
 	http.Handle("/", protectedRoutes)
 	log.Println("Server is listening on port 3200")
