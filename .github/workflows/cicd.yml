@@ -28,34 +28,31 @@ jobs:
           echo "REDIS_USER=${{ secrets.REDIS_USER }}" >> .env
           echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> .env
 
-      - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Prune Docker System (cleanup before build)
+      - name: Docker Cleanup (before build)
         run: |
           sudo docker system prune -a -f --volumes
+          
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
         run: docker build -t ivanoskytan/temuka-main-api-service:latest .
 
-      - name: Tag Docker Image
-        run: docker tag ivanoskytan/temuka-main-api-service:latest ivanoskytan/temuka-main-api-service:${{ github.sha }}
-
       - name: Push Docker Image
         run: docker push ivanoskytan/temuka-main-api-service:latest
 
-      # Optional: Push Tagged Docker Image
-      - name: Push Tagged Docker Image
-        run: docker push ivanoskytan/temuka-main-api-service:${{ github.sha }}
-
-      - name: Cleanup Docker Images and Containers (after build)
+      - name: Docker Cleanup (after build)
         run: |
           sudo docker system prune -a -f --volumes
-          
+
   deploy:
     needs: build
     runs-on: self-hosted
     steps:
+      - name: Docker Cleanup (before pull)
+        run: |
+          sudo docker system prune -a -f --volumes
+
       - name: Pull Docker Image
         run: sudo docker pull ivanoskytan/temuka-main-api-service:latest
 
@@ -70,7 +67,6 @@ jobs:
             --name temuka-main-api-service \
             ivanoskytan/temuka-main-api-service:latest
 
-      # Clean up unused Docker resources to free space
-      - name: Cleanup Docker Images and Containers (after deploy)
+      - name: Docker Cleanup (after deploy)
         run: |
-          sudo docker system prune -f --volumes
+          sudo docker system prune -a -f --volumes
