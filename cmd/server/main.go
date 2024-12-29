@@ -7,7 +7,7 @@ import (
 
 	router "github.com/temuka-api-service/api"
 	"github.com/temuka-api-service/config"
-	"github.com/temuka-api-service/pkg/redis"
+	"github.com/temuka-api-service/internal/queue"
 	"gorm.io/gorm"
 )
 
@@ -41,7 +41,7 @@ func main() {
 	http.HandleFunc("/chat", config.HandleWebSocket)
 	go config.RecentHub.Run()
 
-	go redis.Subscribe(context.Background())
+	queue.StartListening(context.Background())
 
 	http.Handle("/", protectedRoutes)
 	log.Println("Server is listening on port 3200")
