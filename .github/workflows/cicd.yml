@@ -32,7 +32,9 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t ivanoskytan/temuka-main-api-service .
+        run: |
+          docker build -t ivanoskytan/temuka-main-api-service .
+          docker system prune -a -f --volumes  
 
       - name: Push Docker Image
         run: docker push ivanoskytan/temuka-main-api-service:latest
