@@ -32,15 +32,20 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: |
-          docker build -t ivanoskytan/temuka-main-api-service:latest .
-          docker system prune -a -f --volumes  
+        run: docker build -t ivanoskytan/temuka-main-api-service:latest .
 
       - name: Verify Image Exists
         run: docker images
 
+      - name: Tag Docker Image
+        run: docker tag ivanoskytan/temuka-main-api-service:latest ivanoskytan/temuka-main-api-service:${{ github.sha }}
+
       - name: Push Docker Image
         run: docker push ivanoskytan/temuka-main-api-service:latest
+
+      # Optional: Push the tagged version too
+      - name: Push Tagged Docker Image
+        run: docker push ivanoskytan/temuka-main-api-service:${{ github.sha }}
 
   deploy:
     needs: build
@@ -59,3 +64,8 @@ jobs:
           sudo docker run -d -p 3200:${{ secrets.SERVER_PORT }} \
             --name temuka-main-api-service \
             ivanoskytan/temuka-main-api-service:latest
+
+      # Clean up unused Docker resources to free space
+      - name: Cleanup Docker Images and Containers
+        run: |
+          sudo docker system prune -f --volumes
