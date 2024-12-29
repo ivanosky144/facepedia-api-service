@@ -32,9 +32,10 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: |
-          docker build -t ivanoskytan/temuka-main-api-service .
-          docker system prune -a -f --volumes  
+        run: docker build -t ivanoskytan/temuka-main-api-service:latest .
+
+      - name: Verify Image Exists
+        run: docker images
 
       - name: Push Docker Image
         run: docker push ivanoskytan/temuka-main-api-service:latest
@@ -56,5 +57,3 @@ jobs:
           sudo docker run -d -p 3200:${{ secrets.SERVER_PORT }} \
             --name temuka-main-api-service \
             ivanoskytan/temuka-main-api-service:latest
-
-          docker system prune -a -f --volumes  
