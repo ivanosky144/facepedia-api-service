@@ -31,15 +31,12 @@ jobs:
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Prune unused Docker images
+      - name: Prune Docker System (cleanup before build)
         run: |
           sudo docker system prune -a -f --volumes
 
       - name: Build Docker Image
         run: docker build -t ivanoskytan/temuka-main-api-service:latest .
-
-      - name: Verify Image Exists
-        run: docker images
 
       - name: Tag Docker Image
         run: docker tag ivanoskytan/temuka-main-api-service:latest ivanoskytan/temuka-main-api-service:${{ github.sha }}
@@ -47,10 +44,14 @@ jobs:
       - name: Push Docker Image
         run: docker push ivanoskytan/temuka-main-api-service:latest
 
-      # Optional: Push the tagged version too
+      # Optional: Push Tagged Docker Image
       - name: Push Tagged Docker Image
         run: docker push ivanoskytan/temuka-main-api-service:${{ github.sha }}
 
+      - name: Cleanup Docker Images and Containers (after build)
+        run: |
+          sudo docker system prune -a -f --volumes
+          
   deploy:
     needs: build
     runs-on: self-hosted
@@ -70,6 +71,6 @@ jobs:
             ivanoskytan/temuka-main-api-service:latest
 
       # Clean up unused Docker resources to free space
-      - name: Cleanup Docker Images and Containers
+      - name: Cleanup Docker Images and Containers (after deploy)
         run: |
           sudo docker system prune -f --volumes
